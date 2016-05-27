@@ -32,7 +32,7 @@ use yii\base\InvalidConfigException;
  * Below is an example of using Container:
  *
  * ```php
- * namespace app\models;
+ * namespace apps\models;
  *
  * use yii\base\Object;
  * use yii\db\Connection;
@@ -73,10 +73,10 @@ use yii\base\InvalidConfigException;
  * $container->set('yii\db\Connection', [
  *     'dsn' => '...',
  * ]);
- * $container->set('app\models\UserFinderInterface', [
- *     'class' => 'app\models\UserFinder',
+ * $container->set('apps\models\UserFinderInterface', [
+ *     'class' => 'apps\models\UserFinder',
  * ]);
- * $container->set('userLister', 'app\models\UserLister');
+ * $container->set('userLister', 'apps\models\UserLister');
  *
  * $lister = $container->get('userLister');
  *
@@ -116,7 +116,6 @@ class Container extends Component
      * is associated with a list of constructor parameter types or default values.
      */
     private $_dependencies = [];
-
 
     /**
      * Returns an instance of the requested class.
@@ -230,7 +229,7 @@ class Container extends Component
      * You may use [[has()]] to check if a class definition already exists.
      *
      * @param string $class class name, interface name or alias name
-     * @param mixed $definition the definition associated with `$class`. It can be one of the followings:
+     * @param mixed $definition the definition associated with `$class`. It can be one of the following:
      *
      * - a PHP callable: The callable will be executed when [[get()]] is invoked. The signature of the callable
      *   should be `function ($container, $params, $config)`, where `$params` stands for the list of constructor
@@ -242,12 +241,12 @@ class Container extends Component
      * - a string: a class name, an interface name or an alias name.
      * @param array $params the list of constructor parameters. The parameters will be passed to the class
      * constructor when [[get()]] is called.
-     * @return static the container itself
+     * @return $this the container itself
      */
     public function set($class, $definition = [], array $params = [])
     {
         $this->_definitions[$class] = $this->normalizeDefinition($class, $definition);
-        $this->_params[$class] = $params;
+        $this->_params[$class]      = $params;
         unset($this->_singletons[$class]);
         return $this;
     }
@@ -262,14 +261,14 @@ class Container extends Component
      * @param mixed $definition the definition associated with `$class`. See [[set()]] for more details.
      * @param array $params the list of constructor parameters. The parameters will be passed to the class
      * constructor when [[get()]] is called.
-     * @return static the container itself
+     * @return $this the container itself
      * @see set()
      */
     public function setSingleton($class, $definition = [], array $params = [])
     {
         $this->_definitions[$class] = $this->normalizeDefinition($class, $definition);
-        $this->_params[$class] = $params;
-        $this->_singletons[$class] = null;
+        $this->_params[$class]      = $params;
+        $this->_singletons[$class]  = null;
         return $this;
     }
 
@@ -355,7 +354,7 @@ class Container extends Component
     protected function build($class, $params, $config)
     {
         /* @var $reflection ReflectionClass */
-        list ($reflection, $dependencies) = $this->getDependencies($class);
+        list($reflection, $dependencies) = $this->getDependencies($class);
 
         foreach ($params as $index => $param) {
             $dependencies[$index] = $param;
@@ -412,7 +411,7 @@ class Container extends Component
         }
 
         $dependencies = [];
-        $reflection = new ReflectionClass($class);
+        $reflection   = new ReflectionClass($class);
 
         $constructor = $reflection->getConstructor();
         if ($constructor !== null) {
@@ -420,13 +419,13 @@ class Container extends Component
                 if ($param->isDefaultValueAvailable()) {
                     $dependencies[] = $param->getDefaultValue();
                 } else {
-                    $c = $param->getClass();
+                    $c              = $param->getClass();
                     $dependencies[] = Instance::of($c === null ? null : $c->getName());
                 }
             }
         }
 
-        $this->_reflections[$class] = $reflection;
+        $this->_reflections[$class]  = $reflection;
         $this->_dependencies[$class] = $dependencies;
 
         return [$reflection, $dependencies];
@@ -446,7 +445,7 @@ class Container extends Component
                 if ($dependency->id !== null) {
                     $dependencies[$index] = $this->get($dependency->id);
                 } elseif ($reflection !== null) {
-                    $name = $reflection->getConstructor()->getParameters()[$index]->getName();
+                    $name  = $reflection->getConstructor()->getParameters()[$index]->getName();
                     $class = $reflection->getName();
                     throw new InvalidConfigException("Missing required parameter \"$name\" when instantiating \"$class\".");
                 }

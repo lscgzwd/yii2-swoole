@@ -38,7 +38,7 @@ use yii\base\InvalidValueException;
  *
  * ~~~
  * 'user' => [
- *     'identityClass' => 'app\models\User', // User must implement the IdentityInterface
+ *     'identityClass' => 'apps\models\User', // User must implement the IdentityInterface
  *     'enableAutoLogin' => true,
  *     // 'loginUrl' => ['user/login'],
  *     // ...
@@ -58,10 +58,10 @@ use yii\base\InvalidValueException;
  */
 class User extends Component
 {
-    const EVENT_BEFORE_LOGIN = 'beforeLogin';
-    const EVENT_AFTER_LOGIN = 'afterLogin';
+    const EVENT_BEFORE_LOGIN  = 'beforeLogin';
+    const EVENT_AFTER_LOGIN   = 'afterLogin';
     const EVENT_BEFORE_LOGOUT = 'beforeLogout';
-    const EVENT_AFTER_LOGOUT = 'afterLogout';
+    const EVENT_AFTER_LOGOUT  = 'afterLogout';
 
     /**
      * @var string the class name of the [[identity]] object.
@@ -139,7 +139,6 @@ class User extends Component
 
     private $_access = [];
 
-
     /**
      * Initializes the application component.
      */
@@ -196,7 +195,7 @@ class User extends Component
     {
         if ($identity instanceof IdentityInterface) {
             $this->_identity = $identity;
-            $this->_access = [];
+            $this->_access   = [];
         } elseif ($identity === null) {
             $this->_identity = null;
         } else {
@@ -262,7 +261,7 @@ class User extends Component
     public function loginByAccessToken($token, $type = null)
     {
         /* @var $class IdentityInterface */
-        $class = $this->identityClass;
+        $class    = $this->identityClass;
         $identity = $class::findIdentityByAccessToken($token, $type);
         if ($identity && $this->login($identity)) {
             return $identity;
@@ -289,9 +288,9 @@ class User extends Component
             return;
         }
 
-        list ($id, $authKey, $duration) = $data;
+        list($id, $authKey, $duration) = $data;
         /* @var $class IdentityInterface */
-        $class = $this->identityClass;
+        $class    = $this->identityClass;
         $identity = $class::findIdentity($id);
         if ($identity === null) {
             return;
@@ -423,7 +422,7 @@ class User extends Component
             $this->setReturnUrl($request->getUrl());
         }
         if ($this->loginUrl !== null) {
-            $loginUrl = (array)$this->loginUrl;
+            $loginUrl = (array) $this->loginUrl;
             if ($loginUrl[0] !== Yii::$app->requestedRoute) {
                 return Yii::$app->getResponse()->redirect($this->loginUrl);
             }
@@ -445,9 +444,9 @@ class User extends Component
     protected function beforeLogin($identity, $cookieBased, $duration)
     {
         $event = new UserEvent([
-            'identity' => $identity,
+            'identity'    => $identity,
             'cookieBased' => $cookieBased,
-            'duration' => $duration,
+            'duration'    => $duration,
         ]);
         $this->trigger(self::EVENT_BEFORE_LOGIN, $event);
 
@@ -467,9 +466,9 @@ class User extends Component
     protected function afterLogin($identity, $cookieBased, $duration)
     {
         $this->trigger(self::EVENT_AFTER_LOGIN, new UserEvent([
-            'identity' => $identity,
+            'identity'    => $identity,
             'cookieBased' => $cookieBased,
-            'duration' => $duration,
+            'duration'    => $duration,
         ]));
     }
 
@@ -512,13 +511,13 @@ class User extends Component
      */
     protected function renewIdentityCookie()
     {
-        $name = $this->identityCookie['name'];
+        $name  = $this->identityCookie['name'];
         $value = Yii::$app->getRequest()->getCookies()->getValue($name);
         if ($value !== null) {
             $data = json_decode($value, true);
             if (is_array($data) && isset($data[2])) {
-                $cookie = new Cookie($this->identityCookie);
-                $cookie->value = $value;
+                $cookie         = new Cookie($this->identityCookie);
+                $cookie->value  = $value;
                 $cookie->expire = time() + (int) $data[2];
                 Yii::$app->getResponse()->getCookies()->add($cookie);
             }
@@ -536,7 +535,7 @@ class User extends Component
      */
     protected function sendIdentityCookie($identity, $duration)
     {
-        $cookie = new Cookie($this->identityCookie);
+        $cookie        = new Cookie($this->identityCookie);
         $cookie->value = json_encode([
             $identity->getId(),
             $identity->getAuthKey(),
@@ -604,20 +603,20 @@ class User extends Component
     protected function renewAuthStatus()
     {
         $session = Yii::$app->getSession();
-        $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
+        $id      = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->idParam) : null;
 
         if ($id === null) {
             $identity = null;
         } else {
             /* @var $class IdentityInterface */
-            $class = $this->identityClass;
+            $class    = $this->identityClass;
             $identity = $class::findIdentity($id);
         }
 
         $this->setIdentity($identity);
 
         if ($identity !== null && ($this->authTimeout !== null || $this->absoluteAuthTimeout !== null)) {
-            $expire = $this->authTimeout !== null ? $session->get($this->authTimeoutParam) : null;
+            $expire         = $this->authTimeout !== null ? $session->get($this->authTimeoutParam) : null;
             $expireAbsolute = $this->absoluteAuthTimeout !== null ? $session->get($this->absoluteAuthTimeoutParam) : null;
             if ($expire !== null && $expire < time() || $expireAbsolute !== null && $expireAbsolute < time()) {
                 $this->logout(false);
@@ -655,15 +654,27 @@ class User extends Component
      */
     public function can($permissionName, $params = [], $allowCaching = true)
     {
-        $auth = Yii::$app->getAuthManager();
         if ($allowCaching && empty($params) && isset($this->_access[$permissionName])) {
             return $this->_access[$permissionName];
         }
-        $access = $auth->checkAccess($this->getId(), $permissionName, $params);
+        $access = $this->getAuthManager()->checkAccess($this->getId(), $permissionName, $params);
         if ($allowCaching && empty($params)) {
             $this->_access[$permissionName] = $access;
         }
 
         return $access;
+    }
+
+    /**
+     * Returns auth manager associated with the user component.
+     *
+     * By default this is the `authManager` application component.
+     * You may override this method to return a different auth manager instance if needed.
+     * @return \yii\rbac\ManagerInterface
+     * @since 2.0.6
+     */
+    protected function getAuthManager()
+    {
+        return Yii::$app->getAuthManager();
     }
 }

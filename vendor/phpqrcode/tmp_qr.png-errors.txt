@@ -1,1 +1,0 @@
-2015-05-11 06:16:30: imagepng(tmpimg\tmp_qr.png): failed to open stream: No such file or directory

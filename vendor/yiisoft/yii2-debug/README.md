@@ -1,13 +1,17 @@
 Debug Extension for Yii 2
 =========================
 
-This extension provides a debugger for Yii 2 applications. When this extension is used,
+This extension provides a debugger for [Yii framework 2.0](http://www.yiiframework.com) applications. When this extension is used,
 a debugger toolbar will appear at the bottom of every page. The extension also provides
 a set of standalone pages to display more detailed debug information.
 
-This repository is a git submodule of <https://github.com/yiisoft/yii2>.
-Please submit issue reports and pull requests to the main repository.
 For license information check the [LICENSE](LICENSE.md)-file.
+
+Documentation is at [docs/guide/README.md](docs/guide/README.md).
+
+[![Latest Stable Version](https://poser.pugx.org/yiisoft/yii2-debug/v/stable.png)](https://packagist.org/packages/yiisoft/yii2-debug)
+[![Total Downloads](https://poser.pugx.org/yiisoft/yii2-debug/downloads.png)](https://packagist.org/packages/yiisoft/yii2-debug)
+
 
 Installation
 ------------
@@ -38,7 +42,9 @@ Once the extension is installed, simply modify your application configuration as
 return [
     'bootstrap' => ['debug'],
     'modules' => [
-        'debug' => 'yii\debug\Module',
+        'debug' => [
+            'class' => 'yii\debug\Module',
+        ],
         // ...
     ],
     ...

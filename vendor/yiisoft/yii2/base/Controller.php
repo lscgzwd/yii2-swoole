@@ -19,8 +19,7 @@ use Yii;
  * @property string $uniqueId The controller ID that is prefixed with the module ID (if any). This property is
  * read-only.
  * @property View|\yii\web\View $view The view object that can be used to render views or view files.
- * @property string $viewPath The directory containing the view files for this controller. This property is
- * read-only.
+ * @property string $viewPath The directory containing the view files for this controller.
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
@@ -67,7 +66,10 @@ class Controller extends Component implements ViewContextInterface
      * @var View the view object that can be used to render views or view files.
      */
     private $_view;
-
+    /**
+     * @var string the root directory that contains view files for this controller.
+     */
+    private $_viewPath;
 
     /**
      * @param string $id the ID of this controller.
@@ -76,7 +78,7 @@ class Controller extends Component implements ViewContextInterface
      */
     public function __construct($id, $module, $config = [])
     {
-        $this->id = $id;
+        $this->id     = $id;
         $this->module = $module;
         parent::__construct($config);
     }
@@ -87,7 +89,7 @@ class Controller extends Component implements ViewContextInterface
      * It should return an array, with array keys being action IDs, and array values the corresponding
      * action class names or action configuration arrays. For example,
      *
-     * ~~~
+     * ```php
      * return [
      *     'action1' => 'app\components\Action1',
      *     'action2' => [
@@ -96,7 +98,7 @@ class Controller extends Component implements ViewContextInterface
      *         'property2' => 'value2',
      *     ],
      * ];
-     * ~~~
+     * ```
      *
      * [[\Yii::createObject()]] will be used later to create the requested action
      * using the configuration provided here.
@@ -122,16 +124,16 @@ class Controller extends Component implements ViewContextInterface
             throw new InvalidRouteException('Unable to resolve the request: ' . $this->getUniqueId() . '/' . $id);
         }
 
-        Yii::trace("Route to run: " . $action->getUniqueId(), __METHOD__);
+        Yii::trace('Route to run: ' . $action->getUniqueId(), __METHOD__);
 
         if (Yii::$app->requestedAction === null) {
             Yii::$app->requestedAction = $action;
         }
 
-        $oldAction = $this->action;
+        $oldAction    = $this->action;
         $this->action = $action;
 
-        $modules = [];
+        $modules   = [];
         $runAction = true;
 
         // call beforeAction on modules
@@ -236,17 +238,24 @@ class Controller extends Component implements ViewContextInterface
      * The method will trigger the [[EVENT_BEFORE_ACTION]] event. The return value of the method
      * will determine whether the action should continue to run.
      *
+     * In case the action should not run, the request should be handled inside of the `beforeAction` code
+     * by either providing the necessary output or redirecting the request. Otherwise the response will be empty.
+     *
      * If you override this method, your code should look like the following:
      *
      * ```php
      * public function beforeAction($action)
      * {
-     *     if (parent::beforeAction($action)) {
-     *         // your custom code here
-     *         return true;  // or false if needed
-     *     } else {
+     *     // your custom code here, if you want the code to run before action filters,
+     *     // wich are triggered on the [[EVENT_BEFORE_ACTION]] event, e.g. PageCache or AccessControl
+     *
+     *     if (!parent::beforeAction($action)) {
      *         return false;
      *     }
+     *
+     *     // other custom code here
+     *
+     *     return true; // or false to not run the action
      * }
      * ```
      *
@@ -283,7 +292,7 @@ class Controller extends Component implements ViewContextInterface
      */
     public function afterAction($action, $result)
     {
-        $event = new ActionEvent($action);
+        $event         = new ActionEvent($action);
         $event->result = $result;
         $this->trigger(self::EVENT_AFTER_ACTION, $event);
         return $event->result;
@@ -298,7 +307,7 @@ class Controller extends Component implements ViewContextInterface
     public function getModules()
     {
         $modules = [$this->module];
-        $module = $this->module;
+        $module  = $this->module;
         while ($module->module !== null) {
             array_unshift($modules, $module->module);
             $module = $module->module;
@@ -442,7 +451,21 @@ class Controller extends Component implements ViewContextInterface
      */
     public function getViewPath()
     {
-        return $this->module->getViewPath() . DIRECTORY_SEPARATOR . $this->id;
+        if ($this->_viewPath === null) {
+            $this->_viewPath = $this->module->getViewPath() . DIRECTORY_SEPARATOR . $this->id;
+        }
+        return $this->_viewPath;
+    }
+
+    /**
+     * Sets the directory that contains the view files.
+     * @param string $path the root directory of view files.
+     * @throws InvalidParamException if the directory is invalid
+     * @since 2.0.7
+     */
+    public function setViewPath($path)
+    {
+        $this->_viewPath = Yii::getAlias($path);
     }
 
     /**

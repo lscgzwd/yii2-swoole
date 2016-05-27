@@ -1,0 +1,51 @@
+<!DOCTYPE html> 
+<html lang = "zh-cn">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+<title>异常的发工资列表</title>
+
+<!-- 新 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- 可选的Bootstrap主题文件（一般不用引入） -->
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="http://v3.bootcss.com/examples/starter-template/starter-template.css">
+
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+<script src="http://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="http://v3.bootcss.com/assets/js/ie-emulation-modes-warning.js"></script>
+<script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script src="http://v3.bootcss.com/assets/js/ie10-viewport-bug-workaround.js"></script>
+
+</head>
+<body class = "container">
+<?php
+echo $this->renderFile("@app/views/site/admin/header.html", ['navs' => $navs]);
+?>
+<style type="text/css" media="screen">
+#list{
+	float:left;
+	width:300px;
+	margin:50px 0;
+	position:fixed;
+	top:50px;
+}
+
+#container {
+	width:750px;
+	float:right;
+}
+</style>
+<div class = "container" style = "width:1070px">
+    <?php foreach($data as $row):?>	
+    <pre>
+        <?php
+            var_dump($row);
+        ?>
+    </pre>
+    <?php endforeach;?>
+</body>
+</html>

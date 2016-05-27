@@ -1,97 +1,106 @@
-Yii 2 Advanced Application Template
-===================================
+企业版swoole版本
+============================
 
-Yii 2 Advanced Application Template is a skeleton Yii 2 application best for
-developing complex Web applications with multiple tiers.
+基于原来的目录结构把所有的入口都放在了一起，并且逻辑分层不清楚，特重新整理了新的目录结构，并且在部分业务上引入了swoole扩展支持
 
-The template includes three tiers: front end, back end, and console, each of which
-is a separate Yii application.
-
-The template is designed to work in a team development environment. It supports
-deploying the application in different environments.
-
-
-DIRECTORY STRUCTURE
+目录结构说明
 -------------------
 
-```
-common
-    config/              contains shared configurations
-    mail/                contains view files for e-mails
-    models/              contains model classes used in both backend and frontend
-console
-    config/              contains console configurations
-    controllers/         contains console controllers (commands)
-    migrations/          contains database migrations
-    models/              contains console-specific model classes
-    runtime/             contains files generated during runtime
-backend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains backend configurations
-    controllers/         contains Web controller classes
-    models/              contains backend-specific model classes
-    runtime/             contains files generated during runtime
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-frontend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains frontend configurations
-    controllers/         contains Web controller classes
-    models/              contains frontend-specific model classes
-    runtime/             contains files generated during runtime
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-    widgets/             contains frontend widgets
-vendor/                  contains dependent 3rd-party packages
-environments/            contains environment-based overrides
-tests                    contains various tests for the advanced application
-    codeception/         contains tests developed with Codeception PHP Testing Framework
-```
+      api/                  端，交易，支付，客服等第三方接口入口
+      app/                  企业版网站入口
+      backend/              超级管理后台入口
+      console/              定时任务，命令行入口
+      common/               公用逻辑层，Model层，服务请求层
+      vendor/               Yii Framework
+      common/config         公共配置
+      common/models         公共Model
+      common/controllers    控制器基类
+      common/libraries      公共逻辑层
+      common/helpers        公共助手类
+      common/service        公共第三方请求层，比如我们请求支付，交易的服务封装，
+      common/vendor         公共第三方类库，比如PHPExcel
+      common/mail           公共邮件模板
 
 
-REQUIREMENTS
+
+系统需求
 ------------
 
-The minimum requirement by this application template that your Web server supports PHP 5.4.0.
+- PHP5.4
+- MYSQL5.6
+- php扩展列表：
+* bcmath
+* bz2
+* calendar
+* Core
+* ctype
+* curl
+* date
+* dom
+* exif
+* fileinfo
+* filter
+* ftp
+* gd
+* gettext
+* hash
+* iconv
+* igbinary
+* json
+* libxml
+* mbstring
+* mcrypt
+* mysqli
+* mysqlnd
+* openssl
+* pcntl
+* pcre
+* PDO
+* pdo_mysql
+* pdo_sqlite
+* Phar
+* posix
+* readline
+* redis
+* Reflection
+* session
+* shmop
+* SimpleXML
+* soap
+* sockets
+* SPL
+* sqlite3
+* standard
+* swoole
+* sysvmsg
+* sysvsem
+* sysvshm
+* tokenizer
+* wddx
+* xml
+* xmlreader
+* xmlwriter
+* xsl
+* yaml
+* Zend OPcache
+* zlib
+
+[Zend Modules]
+Zend OPcache
 
 
-INSTALLATION
+安装运行
 ------------
 
-### Install from an Archive File
 
-Extract the archive file downloaded from [yiiframework.com](http://www.yiiframework.com/download/) to
-a directory named `advanced` that is directly under the Web root.
-
-Then follow the instructions given in "GETTING STARTED".
-
-
-### Install via Composer
-
-If you do not have [Composer](http://getcomposer.org/), you may install it by following the instructions
-at [getcomposer.org](http://getcomposer.org/doc/00-intro.md#installation-nix).
-
-You can then install the application using the following command:
-
-~~~
-php composer.phar global require "fxp/composer-asset-plugin:1.0.0"
-php composer.phar create-project --prefer-dist --stability=dev yiisoft/yii2-app-advanced advanced
-~~~
+- fork一份本代码到自己的命名空间
+- 添加自己的ssh key到git
+- git clone 检出自己命名空间的代码到本地，比如enterpise-swoole目录
+- 配置nginx,增加server节点，每个入口一个server节点，
+- nginx root指向每个节点的web目录，比如app的，则为  PATH_TO_CODE\enterprise-swoole\app\web;
+- 在web目录下新建runtime.php文件，并且返回local字符串，比如 return 'local';
+- 分别在common\config目录和项目目录\config下建立main-local.php params-local.php文件
+- 重启nginx,输入你配置的域名即可以访问对应项目
+- 请注意，不能直接修改dev,beta,prod,stress,docker等配置文件，除了新加项，本地需要改配置的，统一走local文件 ，local文件已经加入git忽略，大家随便改，不会提交
 
 
-GETTING STARTED
----------------
-
-After you install the application, you have to conduct the following steps to initialize
-the installed application. You only need to do these once for all.
-
-1. Run command `init` to initialize the application with a specific environment.
-2. Create a new database and adjust the `components['db']` configuration in `common/config/main-local.php` accordingly.
-3. Apply migrations with console command `yii migrate`. This will create tables needed for the application to work.
-4. Set document roots of your Web server:
-
-- for frontend `/path/to/yii-application/frontend/web/` and using the URL `http://frontend/`
-- for backend `/path/to/yii-application/backend/web/` and using the URL `http://backend/`
-
-To login into the application, you need to first sign up, with any of your email address, username and password.
-Then, you can login into the application with same email address and password at any time.

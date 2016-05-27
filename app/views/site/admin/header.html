@@ -1,0 +1,22 @@
+<div class = "navbar-header">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class = "container">
+            <ul class = "nav navbar-nav">
+				<!--
+                <li class = "active"><a href = "#">查询公司</a></li>
+                <li><a>充值不到账原因</a></li>
+                <li><a>进行中或者失败的提现列表</a></li>
+                <li><a>统计信息</a></li>
+				-->
+				<?php foreach ($navs as $nav):?>
+					<li>
+						<a href = "<?php echo $nav['href']?>">
+							<?php echo $nav['font']?>
+						</a>
+					</li>
+				<?php endforeach;?>
+            </ul>    
+        </div>
+        
+    </div>
+</div>

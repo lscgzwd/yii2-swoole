@@ -58,7 +58,7 @@ abstract class Target extends Component
      * Note that a variable must be accessible via `$GLOBALS`. Otherwise it won't be logged.
      * Defaults to `['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER']`.
      */
-    public $logVars = ['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER'];
+    public $logVars = ['_GET', '_POST', '_FILES', '_COOKIE'];
     /**
      * @var callable a PHP callable that returns a string to be prefixed to every exported message.
      *
@@ -238,11 +238,16 @@ abstract class Target extends Component
         list($text, $level, $category, $timestamp) = $message;
         $level = Logger::getLevelName($level);
         if (!is_string($text)) {
-            $text = VarDumper::export($text);
+            // exceptions may not be serializable if in the call stack somewhere is a Closure
+            if ($text instanceof \Exception) {
+                $text = (string) $text;
+            } else {
+                $text = VarDumper::export($text);
+            }
         }
         $traces = [];
         if (isset($message[4])) {
-            foreach($message[4] as $trace) {
+            foreach ($message[4] as $trace) {
                 $traces[] = "in {$trace['file']}:{$trace['line']}";
             }
         }

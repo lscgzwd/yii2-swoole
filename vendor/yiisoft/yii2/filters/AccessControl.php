@@ -11,8 +11,8 @@ use Yii;
 use yii\base\Action;
 use yii\base\ActionFilter;
 use yii\di\Instance;
-use yii\web\ForbiddenHttpException;
 use yii\web\User;
+use yii\web\ForbiddenHttpException;
 
 /**
  * AccessControl provides simple access control based on a set of rules.
@@ -54,7 +54,8 @@ use yii\web\User;
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
  */
-class AccessControl extends ActionFilter {
+class AccessControl extends ActionFilter
+{
     /**
      * @var User|array|string the user object representing the authentication status or the ID of the user application component.
      * Starting from version 2.0.2, this can also be a configuration array for creating the object.
@@ -87,10 +88,12 @@ class AccessControl extends ActionFilter {
      */
     public $rules = [];
 
+
     /**
      * Initializes the [[rules]] array by instantiating rule objects from configurations.
      */
-    public function init() {
+    public function init()
+    {
         parent::init();
         $this->user = Instance::ensure($this->user, User::className());
         foreach ($this->rules as $i => $rule) {
@@ -106,7 +109,8 @@ class AccessControl extends ActionFilter {
      * @param Action $action the action to be executed.
      * @return boolean whether the action should continue to be executed.
      */
-    public function beforeAction($action) {
+    public function beforeAction($action)
+    {
         $user = $this->user;
         $request = Yii::$app->getRequest();
         /* @var $rule AccessRule */
@@ -139,7 +143,8 @@ class AccessControl extends ActionFilter {
      * @param User $user the current user
      * @throws ForbiddenHttpException if the user is already logged in.
      */
-    protected function denyAccess($user) {
+    protected function denyAccess($user)
+    {
         if ($user->getIsGuest()) {
             $user->loginRequired();
         } else {

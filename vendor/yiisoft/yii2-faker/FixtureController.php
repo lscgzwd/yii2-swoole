@@ -125,7 +125,7 @@ use yii\helpers\VarDumper;
  *        'fixture' => [
  *            'class' => 'yii\faker\FixtureController',
  *            'providers' => [
- *                'app\tests\unit\faker\providers\Book',
+ *                'apps\tests\unit\faker\providers\Book',
  *            ],
  *        ],
  *    ],
@@ -165,14 +165,13 @@ class FixtureController extends \yii\console\controllers\FixtureController
      */
     private $_generator;
 
-
     /**
      * @inheritdoc
      */
     public function options($actionID)
     {
         return array_merge(parent::options($actionID), [
-            'templatePath', 'language', 'fixtureDataPath', 'count'
+            'templatePath', 'language', 'fixtureDataPath', 'count',
         ]);
     }
 
@@ -204,7 +203,7 @@ class FixtureController extends \yii\console\controllers\FixtureController
     /**
      * Generates fixtures and fill them with Faker data.
      * For example,
-     * 
+     *
      * ~~~
      * //generate fixtures in russian language
      * yii fixture/generate user --count=5 --language=ru_RU
@@ -212,7 +211,7 @@ class FixtureController extends \yii\console\controllers\FixtureController
      * //generate several fixtures
      * yii fixture/generate user profile team
      * ~~~
-     * 
+     *
      * @throws \yii\base\InvalidParamException
      * @throws \yii\console\Exception
      */
@@ -241,7 +240,7 @@ class FixtureController extends \yii\console\controllers\FixtureController
             return static::EXIT_CODE_NORMAL;
         }
 
-        $templatePath = Yii::getAlias($this->templatePath);
+        $templatePath    = Yii::getAlias($this->templatePath);
         $fixtureDataPath = Yii::getAlias($this->fixtureDataPath);
 
         FileHelper::createDirectory($fixtureDataPath);
@@ -272,7 +271,7 @@ class FixtureController extends \yii\console\controllers\FixtureController
             return static::EXIT_CODE_NORMAL;
         }
 
-        $templatePath = Yii::getAlias($this->templatePath);
+        $templatePath    = Yii::getAlias($this->templatePath);
         $fixtureDataPath = Yii::getAlias($this->fixtureDataPath);
 
         FileHelper::createDirectory($fixtureDataPath);
@@ -280,7 +279,7 @@ class FixtureController extends \yii\console\controllers\FixtureController
         $generatedTemplates = [];
 
         foreach ($foundTemplates as $templateName) {
-            $this->generateFixtureFile($templateName, $templatePath, $fixtureDataPath);            
+            $this->generateFixtureFile($templateName, $templatePath, $fixtureDataPath);
             $generatedTemplates[] = $templateName;
         }
 
@@ -376,7 +375,7 @@ class FixtureController extends \yii\console\controllers\FixtureController
     public function getGenerator()
     {
         if ($this->_generator === null) {
-            $language = $this->language === null ? Yii::$app->language : $this->language;
+            $language         = $this->language === null ? Yii::$app->language : $this->language;
             $this->_generator = \Faker\Factory::create(str_replace('-', '_', $language));
         }
         return $this->_generator;
@@ -424,7 +423,7 @@ class FixtureController extends \yii\console\controllers\FixtureController
     {
         // $faker and $index are exposed to the template file
         $faker = $this->getGenerator();
-        return require($_template_);
+        return require $_template_;
     }
 
     /**
@@ -443,7 +442,7 @@ class FixtureController extends \yii\console\controllers\FixtureController
 
         $content = $this->exportFixtures($fixtures);
 
-        file_put_contents($fixtureDataPath . '/'. $templateName . '.php', $content);
+        file_put_contents($fixtureDataPath . '/' . $templateName . '.php', $content);
     }
 
     /**

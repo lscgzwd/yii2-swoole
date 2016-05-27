@@ -43,7 +43,6 @@ class Generator extends \yii\gii\Generator
      */
     public $actions = 'index';
 
-
     /**
      * @inheritdoc
      */
@@ -83,10 +82,10 @@ class Generator extends \yii\gii\Generator
     public function attributeLabels()
     {
         return [
-            'baseClass' => 'Base Class',
+            'baseClass'       => 'Base Class',
             'controllerClass' => 'Controller Class',
-            'viewPath' => 'View Path',
-            'actions' => 'Action IDs',
+            'viewPath'        => 'View Path',
+            'actions'         => 'Action IDs',
         ];
     }
 
@@ -116,19 +115,19 @@ class Generator extends \yii\gii\Generator
     {
         return [
             'controllerClass' => 'This is the name of the controller class to be generated. You should
-                provide a fully qualified namespaced class (e.g. <code>app\controllers\PostController</code>),
+                provide a fully qualified namespaced class (e.g. <code>apps\controllers\PostController</code>),
                 and class name should be in CamelCase ending with the word <code>Controller</code>. Make sure the class
                 is using the same namespace as specified by your application\'s controllerNamespace property.',
-            'actions' => 'Provide one or multiple action IDs to generate empty action method(s) in the controller. Separate multiple action IDs with commas or spaces.
+            'actions'         => 'Provide one or multiple action IDs to generate empty action method(s) in the controller. Separate multiple action IDs with commas or spaces.
                 Action IDs should be in lower case. For example:
                 <ul>
                     <li><code>index</code> generates <code>actionIndex()</code></li>
                     <li><code>create-order</code> generates <code>actionCreateOrder()</code></li>
                 </ul>',
-            'viewPath' => 'Specify the directory for storing the view scripts for the controller. You may use path alias here, e.g.,
+            'viewPath'        => 'Specify the directory for storing the view scripts for the controller. You may use path alias here, e.g.,
                 <code>/var/www/basic/controllers/views/order</code>, <code>@app/views/order</code>. If not set, it will default
                 to <code>@app/views/ControllerID</code>',
-            'baseClass' => 'This is the class that the new controller class will extend from. Please make sure the class exists and can be autoloaded.',
+            'baseClass'       => 'This is the class that the new controller class will extend from. Please make sure the class exists and can be autoloaded.',
         ];
     }
 
@@ -218,6 +217,6 @@ class Generator extends \yii\gii\Generator
     public function getControllerNamespace()
     {
         $name = StringHelper::basename($this->controllerClass);
-        return ltrim(substr($this->controllerClass, 0, - (strlen($name) + 1)), '\\');
+        return ltrim(substr($this->controllerClass, 0, -(strlen($name) + 1)), '\\');
     }
 }

@@ -75,9 +75,15 @@ class Application extends \yii\base\Application
             list ($route, $params) = $request->resolve();
         } else {
             $route = $this->catchAll[0];
-            $params = array_splice($this->catchAll, 1);
+            $params = $this->catchAll;
+            unset($params[0]);
         }
         try {
+            //处理#/deal-search 的情况
+            $tmp = explode("#", $route);
+            if (count($tmp)) {
+                $route = $tmp[0];
+            }
             Yii::trace("Route requested: '$route'", __METHOD__);
             $this->requestedRoute = $route;
             $result = $this->runAction($route, $params);

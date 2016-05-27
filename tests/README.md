@@ -1,13 +1,15 @@
-This directory contains various tests for the advanced applications.
+This directory contains various tests for the basic application.
 
 Tests in `codeception` directory are developed with [Codeception PHP Testing Framework](http://codeception.com/).
 
-After creating and setting up the advanced application, follow these steps to prepare for the tests:
+After creating the basic application, follow these steps to prepare for the tests:
 
 1. Install Codeception if it's not yet installed:
 
    ```
-   composer global require "codeception/codeception=2.0.*" "codeception/specify=*" "codeception/verify=*"
+   composer global require "codeception/codeception=2.0.*"
+   composer global require "codeception/specify=*"
+   composer global require "codeception/verify=*"
    ```
 
    If you've never used Composer for global packages run `composer global status`. It should output:
@@ -16,8 +18,8 @@ After creating and setting up the advanced application, follow these steps to pr
    Changed current directory to <directory>
    ```
 
-   Then add `<directory>/vendor/bin` to you `PATH` environment variable. Now you're able to use `codecept` from command
-   line globally.
+  Then add `<directory>/vendor/bin` to you `PATH` environment variable. Now we're able to use `codecept` from command
+  line globally.
 
 2. Install faker extension by running the following from template root directory where `composer.json` is:
 
@@ -25,34 +27,90 @@ After creating and setting up the advanced application, follow these steps to pr
    composer require --dev yiisoft/yii2-faker:*
    ```
 
-3. Create `yii2_advanced_tests` database then update it by applying migrations:
+3. Create `yii2_basic_tests` database and update it by applying migrations (you may skip this step if you do not have created any migrations yet):
 
    ```
    codeception/bin/yii migrate
    ```
 
-4. In order to be able to run acceptance tests you need to start a webserver. The simplest way is to use PHP built in
-   webserver. In the root directory where `common`, `frontend` etc. are execute the following:
+   The command needs to be run in the `tests` directory.
+   The database configuration can be found at `tests/codeception/config/config.php`.
+
+4. Build the test suites:
+
+   ```
+   codecept build
+   ```
+
+5. In order to be able to run acceptance tests you need to start a webserver. The simplest way is to use PHP built in
+webserver. In the `web` directory execute the following:
 
    ```
    php -S localhost:8080
    ```
 
-5. Now you can run the tests with the following commands, assuming you are in the `tests/codeception` directory:
+6. Now you can run the tests with the following commands:
 
    ```
-   # frontend tests
-   cd frontend
-   codecept build
+   # run all available tests
    codecept run
-   
-   # backend tests
-   
-   cd backend
-   codecept build
-   codecept run
-    
-   # etc.
+   # run acceptance tests
+   codecept run acceptance
+   # run functional tests
+   codecept run functional
+   # run unit tests
+   codecept run unit
    ```
 
-  If you already have run `codecept build` for each application, you can skip that step and run all tests by a single `codecept run`.
+Code coverage support
+---------------------
+
+By default, code coverage is disabled in `codeception.yml` configuration file, you should uncomment needed rows to be able
+to collect code coverage. You can run your tests and collect coverage with the following command:
+
+```
+#collect coverage for all tests
+codecept run --coverage-html --coverage-xml
+
+#collect coverage only for unit tests
+codecept run unit --coverage-html --coverage-xml
+
+#collect coverage for unit and functional tests
+codecept run functional,unit --coverage-html --coverage-xml
+```
+
+You can see code coverage output under the `tests/_output` directory.
+
+###Remote code coverage
+
+When you run your tests not in the same process where code coverage is collected, then you should uncomment `remote` option and its
+related options, to be able to collect code coverage correctly. To setup remote code coverage you should follow [instructions](http://codeception.com/docs/11-Codecoverage)
+from codeception site.
+
+1. install `Codeception c3` remote support `composer require "codeception/c3:*"`;
+
+2. copy `c3.php` file under your `web` directory;
+
+3. include `c3.php` file in your `index-test.php` file before application run, so it can catch needed requests.
+
+4. edit `c3.php` to update config file path (~ line 55) with `$config_file = realpath(__DIR__ . '/../tests/codeception.yml');`
+
+Configuration options that are used by remote code coverage:
+
+- c3_url: url pointing to entry script that includes `c3.php` file, so `Codeception` will be able to produce code coverage;
+- remote: whether to enable remote code coverage or not;
+- remote_config: path to the `codeception.yml` configuration file, from the directory where `c3.php` file is located. This is needed
+  so that `Codeception` can create itself instance and collect code coverage correctly.
+
+By default `c3_url` and `remote_config` setup correctly, you only need to copy and include `c3.php` file in your `index-test.php`
+
+After that you should be able to collect code coverage from tests that run through `PhpBrowser` or `WebDriver` with same command
+as for other tests:
+
+```
+#collect coverage from remote
+codecept run acceptance --coverage-html --coverage-xml
+```
+
+Please refer to [Codeception tutorial](http://codeception.com/docs/01-Introduction) for
+more details about writing and running acceptance, functional and unit tests.

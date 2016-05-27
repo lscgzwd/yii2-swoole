@@ -1,0 +1,69 @@
+<!DOCTYPE html> 
+<html lang = "zh-cn">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+<title>支行信息需要审核列表</title>
+
+<!-- 新 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- 可选的Bootstrap主题文件（一般不用引入） -->
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="http://v3.bootcss.com/examples/starter-template/starter-template.css">
+
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+<script src="http://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="http://v3.bootcss.com/assets/js/ie-emulation-modes-warning.js"></script>
+<script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script src="http://v3.bootcss.com/assets/js/ie10-viewport-bug-workaround.js"></script>
+
+</head>
+<body class = "container">
+<?php
+echo $this->renderFile("@app/views/site/admin/header.html", ['navs' => $navs]);
+?>
+<style type="text/css" media="screen">
+#list{
+	float:left;
+	width:300px;
+	margin:50px 0;
+	position:fixed;
+	top:50px;
+}
+
+#container {
+	width:750px;
+	float:right;
+}
+</style>
+<?php 
+echo "<h3>目前有" . $num . "家支行需要审核</h3>";
+if (isset($notice) && $notice) {
+    echo "<h2>" . $notice. "</h2>";
+}
+?>
+<div class = "container" style = "width:1070px">
+    <?php if (count($data) >= 3): ?>
+    <form action="" method="post" accept-charset="utf-8">
+        银行：
+        <select name="LBNK_CD" id="LBNK_CD">
+            <?php foreach ($banks as $bank) : ?>
+            <option value="<?php echo $bank['LBNK_CD']?>">
+                <?php echo $bank['BNK_NM'] ?>
+            </option>
+            <?php endforeach?>
+        </select>
+        <p>支行名称 : <input type="text" name="LBNK_NM" value="<?php echo $data['LBNK_NM']?>" style = "width:400px"></p>
+        <p>联行号 : <input type="text" name="LBNK_NO" value="<?php echo $data['LBNK_NO']?>"></p>
+        <p>省: <input type="text" name="PROV_CD" value="<?php echo $data['PROV_CD']?>"></p>
+        <p>市: <input type="text" name="CITY_CD" value="<?php echo $data['CITY_CD']?>"></p>
+        <input type="hidden" name="userId" value="<?php echo $data['userId']?>">
+        <p><input type="submit" value="提交"></p>
+    </form>
+    <?php endif; ?>
+</div>
+</body>
+</html>

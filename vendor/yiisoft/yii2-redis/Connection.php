@@ -226,7 +226,6 @@ class Connection extends Component
      */
     private $_socket;
 
-
     /**
      * Closes the connection when this component is being serialized.
      * @return array
@@ -288,10 +287,14 @@ class Connection extends Component
     public function close()
     {
         if ($this->_socket !== null) {
-            $connection = ($this->unixSocket ?: $this->hostname . ':' . $this->port) . ', database=' . $this->database;
-            \Yii::trace('Closing DB connection: ' . $connection, __METHOD__);
-            $this->executeCommand('QUIT');
-            stream_socket_shutdown($this->_socket, STREAM_SHUT_RDWR);
+            try {
+                $connection = ($this->unixSocket ?: $this->hostname . ':' . $this->port) . ', database=' . $this->database;
+                \Yii::trace('Closing DB connection: ' . $connection, __METHOD__);
+                $this->executeCommand('QUIT'); // redis fwrite will trigger an error when a connection has closed by server
+                stream_socket_shutdown($this->_socket, STREAM_SHUT_RDWR);
+            } catch (\Exception $e) {
+
+            }
             $this->_socket = null;
         }
     }
@@ -404,7 +407,7 @@ class Connection extends Component
                     return null;
                 }
                 $length = $line + 2;
-                $data = '';
+                $data   = '';
                 while ($length > 0) {
                     if (($block = fread($this->_socket, $length)) === false) {
                         throw new Exception("Failed to read from socket.\nRedis command was: " . $command);
@@ -416,7 +419,7 @@ class Connection extends Component
                 return mb_substr($data, 0, -2, '8bit');
             case '*': // Multi-bulk replies
                 $count = (int) $line;
-                $data = [];
+                $data  = [];
                 for ($i = 0; $i < $count; $i++) {
                     $data[] = $this->parseResponse($command);
                 }

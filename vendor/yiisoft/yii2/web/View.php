@@ -8,9 +8,9 @@
 namespace yii\web;
 
 use Yii;
+use yii\base\InvalidConfigException;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
-use yii\base\InvalidConfigException;
 
 /**
  * View represents a view object in the MVC pattern.
@@ -25,7 +25,7 @@ use yii\base\InvalidConfigException;
  *
  * ~~~
  * 'view' => [
- *     'theme' => 'app\themes\MyTheme',
+ *     'theme' => 'apps\themes\MyTheme',
  *     'renderers' => [
  *         // you may add Smarty or Twig renderer here
  *     ]
@@ -130,7 +130,6 @@ class View extends \yii\base\View
 
     private $_assetManager;
 
-
     /**
      * Marks the position of an HTML head section.
      */
@@ -174,9 +173,9 @@ class View extends \yii\base\View
         $content = ob_get_clean();
 
         echo strtr($content, [
-            self::PH_HEAD => $this->renderHeadHtml(),
+            self::PH_HEAD       => $this->renderHeadHtml(),
             self::PH_BODY_BEGIN => $this->renderBodyBeginHtml(),
-            self::PH_BODY_END => $this->renderBodyEndHtml($ajaxMode),
+            self::PH_BODY_END   => $this->renderBodyEndHtml($ajaxMode),
         ]);
 
         $this->clear();
@@ -237,12 +236,12 @@ class View extends \yii\base\View
      */
     public function clear()
     {
-        $this->metaTags = null;
-        $this->linkTags = null;
-        $this->css = null;
-        $this->cssFiles = null;
-        $this->js = null;
-        $this->jsFiles = null;
+        $this->metaTags     = null;
+        $this->linkTags     = null;
+        $this->css          = null;
+        $this->cssFiles     = null;
+        $this->js           = null;
+        $this->jsFiles      = null;
         $this->assetBundles = [];
     }
 
@@ -280,8 +279,8 @@ class View extends \yii\base\View
     public function registerAssetBundle($name, $position = null)
     {
         if (!isset($this->assetBundles[$name])) {
-            $am = $this->getAssetManager();
-            $bundle = $am->getBundle($name);
+            $am                        = $this->getAssetManager();
+            $bundle                    = $am->getBundle($name);
             $this->assetBundles[$name] = false;
             // register dependencies
             $pos = isset($bundle->jsOptions['position']) ? $bundle->jsOptions['position'] : null;
@@ -313,6 +312,18 @@ class View extends \yii\base\View
 
     /**
      * Registers a meta tag.
+     *
+     * For example, a description meta tag can be added like the following:
+     *
+     * ```php
+     * $view->registerMetaTag([
+     *     'name' => 'description',
+     *     'content' => 'This website is about funny raccoons.'
+     * ]);
+     * ```
+     *
+     * will result in the meta tag `<meta name="description" content="This website is about funny raccoons.">`.
+     *
      * @param array $options the HTML attributes for the meta tag.
      * @param string $key the key that identifies the meta tag. If two meta tags are registered
      * with the same key, the latter will overwrite the former. If this is null, the new meta tag
@@ -329,6 +340,19 @@ class View extends \yii\base\View
 
     /**
      * Registers a link tag.
+     *
+     * For example, a link tag for a custom [favicon](http://www.w3.org/2005/10/howto-favicon)
+     * can be added like the following:
+     *
+     * ```php
+     * $view->registerLinkTag(['rel' => 'icon', 'type' => 'image/png', 'href' => '/myicon.png']);
+     * ```
+     *
+     * which will result in the following HTML: `<link rel="icon" type="image/png" href="/myicon.png">`.
+     *
+     * **Note:** To register link tags for CSS stylesheets, use [[registerCssFile()]] instead, which
+     * has more options for this kind of link tag.
+     *
      * @param array $options the HTML attributes for the link tag.
      * @param string $key the key that identifies the link tag. If two link tags are registered
      * with the same key, the latter will overwrite the former. If this is null, the new link tag
@@ -345,15 +369,15 @@ class View extends \yii\base\View
 
     /**
      * Registers a CSS code block.
-     * @param string $css the CSS code block to be registered
-     * @param array $options the HTML attributes for the style tag.
+     * @param string $css the content of the CSS code block to be registered
+     * @param array $options the HTML attributes for the `<style>`-tag.
      * @param string $key the key that identifies the CSS code block. If null, it will use
      * $css as the key. If two CSS code blocks are registered with the same key, the latter
      * will overwrite the former.
      */
     public function registerCss($css, $options = [], $key = null)
     {
-        $key = $key ?: md5($css);
+        $key             = $key ?: md5($css);
         $this->css[$key] = Html::style($css, $options);
     }
 
@@ -371,18 +395,18 @@ class View extends \yii\base\View
      */
     public function registerCssFile($url, $options = [], $key = null)
     {
-        $url = Yii::getAlias($url);
-        $key = $key ?: $url;
+        $url     = Yii::getAlias($url);
+        $key     = $key ?: $url;
         $depends = ArrayHelper::remove($options, 'depends', []);
 
         if (empty($depends)) {
             $this->cssFiles[$key] = Html::cssFile($url, $options);
         } else {
             $this->getAssetManager()->bundles[$key] = new AssetBundle([
-                'baseUrl' => '',
-                'css' => [strncmp($url, '//', 2) === 0 ? $url : ltrim($url, '/')],
+                'baseUrl'    => '',
+                'css'        => [strncmp($url, '//', 2) === 0 ? $url : ltrim($url, '/')],
                 'cssOptions' => $options,
-                'depends' => (array) $depends,
+                'depends'    => (array) $depends,
             ]);
             $this->registerAssetBundle($key);
         }
@@ -408,7 +432,7 @@ class View extends \yii\base\View
      */
     public function registerJs($js, $position = self::POS_READY, $key = null)
     {
-        $key = $key ?: md5($js);
+        $key                       = $key ?: md5($js);
         $this->js[$position][$key] = $js;
         if ($position === self::POS_READY || $position === self::POS_LOAD) {
             JqueryAsset::register($this);
@@ -435,19 +459,19 @@ class View extends \yii\base\View
      */
     public function registerJsFile($url, $options = [], $key = null)
     {
-        $url = Yii::getAlias($url);
-        $key = $key ?: $url;
+        $url     = Yii::getAlias($url);
+        $key     = $key ?: $url;
         $depends = ArrayHelper::remove($options, 'depends', []);
 
         if (empty($depends)) {
-            $position = ArrayHelper::remove($options, 'position', self::POS_END);
+            $position                       = ArrayHelper::remove($options, 'position', self::POS_END);
             $this->jsFiles[$position][$key] = Html::jsFile($url, $options);
         } else {
             $this->getAssetManager()->bundles[$key] = new AssetBundle([
-                'baseUrl' => '',
-                'js' => [strncmp($url, '//', 2) === 0 ? $url : ltrim($url, '/')],
+                'baseUrl'   => '',
+                'js'        => [strncmp($url, '//', 2) === 0 ? $url : ltrim($url, '/')],
                 'jsOptions' => $options,
-                'depends' => (array) $depends,
+                'depends'   => (array) $depends,
             ]);
             $this->registerAssetBundle($key);
         }
@@ -537,11 +561,11 @@ class View extends \yii\base\View
                 $lines[] = Html::script(implode("\n", $this->js[self::POS_END]), ['type' => 'text/javascript']);
             }
             if (!empty($this->js[self::POS_READY])) {
-                $js = "jQuery(document).ready(function () {\n" . implode("\n", $this->js[self::POS_READY]) . "\n});";
+                $js      = "jQuery(document).ready(function () {\n" . implode("\n", $this->js[self::POS_READY]) . "\n});";
                 $lines[] = Html::script($js, ['type' => 'text/javascript']);
             }
             if (!empty($this->js[self::POS_LOAD])) {
-                $js = "jQuery(window).load(function () {\n" . implode("\n", $this->js[self::POS_LOAD]) . "\n});";
+                $js      = "jQuery(window).load(function () {\n" . implode("\n", $this->js[self::POS_LOAD]) . "\n});";
                 $lines[] = Html::script($js, ['type' => 'text/javascript']);
             }
         }

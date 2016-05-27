@@ -76,9 +76,9 @@ class Module extends ServiceLocator
      *
      * ~~~
      * [
-     *   'account' => 'app\controllers\UserController',
+     *   'account' => 'apps\controllers\UserController',
      *   'article' => [
-     *      'class' => 'app\controllers\PostController',
+     *      'class' => 'apps\controllers\PostController',
      *      'pageTitle' => 'something new',
      *   ],
      * ]
@@ -124,7 +124,6 @@ class Module extends ServiceLocator
      */
     private $_modules = [];
 
-
     /**
      * Constructor.
      * @param string $id the ID of this module
@@ -133,7 +132,7 @@ class Module extends ServiceLocator
      */
     public function __construct($id, $parent = null, $config = [])
     {
-        $this->id = $id;
+        $this->id     = $id;
         $this->module = $parent;
         parent::__construct($config);
     }
@@ -201,7 +200,7 @@ class Module extends ServiceLocator
     public function getBasePath()
     {
         if ($this->_basePath === null) {
-            $class = new \ReflectionClass($this);
+            $class           = new \ReflectionClass($this);
             $this->_basePath = dirname($class->getFileName());
         }
 
@@ -217,7 +216,7 @@ class Module extends ServiceLocator
     public function setBasePath($path)
     {
         $path = Yii::getAlias($path);
-        $p = realpath($path);
+        $p    = realpath($path);
         if ($p !== false && is_dir($p)) {
             $this->_basePath = $p;
         } else {
@@ -364,7 +363,7 @@ class Module extends ServiceLocator
      * Adds a sub-module to this module.
      * @param string $id module ID
      * @param Module|array|null $module the sub-module to be added to this module. This can
-     * be one of the followings:
+     * be one of the following:
      *
      * - a [[Module]] object
      * - a configuration array: when [[getModule()]] is called initially, the array
@@ -418,10 +417,10 @@ class Module extends ServiceLocator
      * ~~~
      * [
      *     'comment' => [
-     *         'class' => 'app\modules\comment\CommentModule',
+     *         'class' => 'apps\modules\comment\CommentModule',
      *         'db' => 'db',
      *     ],
-     *     'booking' => ['class' => 'app\modules\booking\BookingModule'],
+     *     'booking' => ['class' => 'apps\modules\booking\BookingModule'],
      * ]
      * ~~~
      *
@@ -450,10 +449,10 @@ class Module extends ServiceLocator
         if (is_array($parts)) {
             /* @var $controller Controller */
             list($controller, $actionID) = $parts;
-            $oldController = Yii::$app->controller;
-            Yii::$app->controller = $controller;
-            $result = $controller->runAction($actionID, $params);
-            Yii::$app->controller = $oldController;
+            $oldController               = Yii::$app->controller;
+            Yii::$app->controller        = $controller;
+            $result                      = $controller->runAction($actionID, $params);
+            Yii::$app->controller        = $oldController;
 
             return $result;
         } else {
@@ -497,9 +496,9 @@ class Module extends ServiceLocator
         }
 
         if (strpos($route, '/') !== false) {
-            list ($id, $route) = explode('/', $route, 2);
+            list($id, $route) = explode('/', $route, 2);
         } else {
-            $id = $route;
+            $id    = $route;
             $route = '';
         }
 
@@ -521,7 +520,7 @@ class Module extends ServiceLocator
         $controller = $this->createControllerByID($id);
         if ($controller === null && $route !== '') {
             $controller = $this->createControllerByID($id . '/' . $route);
-            $route = '';
+            $route      = '';
         }
 
         return $controller === null ? false : [$controller, $route];
@@ -544,10 +543,10 @@ class Module extends ServiceLocator
     {
         $pos = strrpos($id, '/');
         if ($pos === false) {
-            $prefix = '';
+            $prefix    = '';
             $className = $id;
         } else {
-            $prefix = substr($id, 0, $pos + 1);
+            $prefix    = substr($id, 0, $pos + 1);
             $className = substr($id, $pos + 1);
         }
 
@@ -559,13 +558,14 @@ class Module extends ServiceLocator
         }
 
         $className = str_replace(' ', '', ucwords(str_replace('-', ' ', $className))) . 'Controller';
-        $className = ltrim($this->controllerNamespace . '\\' . str_replace('/', '\\', $prefix)  . $className, '\\');
+        $className = ltrim($this->controllerNamespace . '\\' . str_replace('/', '\\', $prefix) . $className, '\\');
         if (strpos($className, '-') !== false || !class_exists($className)) {
             return null;
         }
 
         if (is_subclass_of($className, 'yii\base\Controller')) {
-            return Yii::createObject($className, [$id, $this]);
+            $controller = Yii::createObject($className, [$id, $this]);
+            return get_class($controller) === $className ? $controller : null;
         } elseif (YII_DEBUG) {
             throw new InvalidConfigException("Controller class must extend from \\yii\\base\\Controller.");
         } else {
@@ -579,17 +579,21 @@ class Module extends ServiceLocator
      * The method will trigger the [[EVENT_BEFORE_ACTION]] event. The return value of the method
      * will determine whether the action should continue to run.
      *
+     * In case the action should not run, the request should be handled inside of the `beforeAction` code
+     * by either providing the necessary output or redirecting the request. Otherwise the response will be empty.
+     *
      * If you override this method, your code should look like the following:
      *
      * ```php
      * public function beforeAction($action)
      * {
-     *     if (parent::beforeAction($action)) {
-     *         // your custom code here
-     *         return true;  // or false if needed
-     *     } else {
+     *     if (!parent::beforeAction($action)) {
      *         return false;
      *     }
+     *
+     *     // your custom code here
+     *
+     *     return true; // or false to not run the action
      * }
      * ```
      *
@@ -626,7 +630,7 @@ class Module extends ServiceLocator
      */
     public function afterAction($action, $result)
     {
-        $event = new ActionEvent($action);
+        $event         = new ActionEvent($action);
         $event->result = $result;
         $this->trigger(self::EVENT_AFTER_ACTION, $event);
         return $event->result;

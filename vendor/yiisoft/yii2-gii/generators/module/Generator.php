@@ -7,9 +7,9 @@
 
 namespace yii\gii\generators\module;
 
+use Yii;
 use yii\gii\CodeFile;
 use yii\helpers\Html;
-use Yii;
 use yii\helpers\StringHelper;
 
 /**
@@ -25,7 +25,6 @@ class Generator extends \yii\gii\Generator
 {
     public $moduleClass;
     public $moduleID;
-
 
     /**
      * @inheritdoc
@@ -63,7 +62,7 @@ class Generator extends \yii\gii\Generator
     public function attributeLabels()
     {
         return [
-            'moduleID' => 'Module ID',
+            'moduleID'    => 'Module ID',
             'moduleClass' => 'Module Class',
         ];
     }
@@ -74,8 +73,8 @@ class Generator extends \yii\gii\Generator
     public function hints()
     {
         return [
-            'moduleID' => 'This refers to the ID of the module, e.g., <code>admin</code>.',
-            'moduleClass' => 'This is the fully qualified class name of the module, e.g., <code>app\modules\admin\Module</code>.',
+            'moduleID'    => 'This refers to the ID of the module, e.g., <code>admin</code>.',
+            'moduleClass' => 'This is the fully qualified class name of the module, e.g., <code>apps\modules\admin\Module</code>.',
         ];
     }
 
@@ -121,9 +120,9 @@ EOD;
      */
     public function generate()
     {
-        $files = [];
+        $files      = [];
         $modulePath = $this->getModulePath();
-        $files[] = new CodeFile(
+        $files[]    = new CodeFile(
             $modulePath . '/' . StringHelper::basename($this->moduleClass) . '.php',
             $this->render("module.php")
         );
