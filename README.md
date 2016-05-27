@@ -6,8 +6,8 @@
 目录结构说明
 -------------------
 
-      api/                  端，交易，支付，客服等第三方接口入口
-      app/                  企业版网站入口
+      api/                  版本化接口管理入口
+      app/                  PC版本网站入口，老入口
       backend/              超级管理后台入口
       console/              定时任务，命令行入口
       common/               公用逻辑层，Model层，服务请求层
@@ -15,11 +15,11 @@
       common/config         公共配置
       common/models         公共Model
       common/controllers    控制器基类
-      common/libraries      公共逻辑层
       common/helpers        公共助手类
-      common/service        公共第三方请求层，比如我们请求支付，交易的服务封装，
+      common/service        公共服务层，
       common/vendor         公共第三方类库，比如PHPExcel
       common/mail           公共邮件模板
+      swoole/               swoole运行类，重写YII核心类
 
 
 
@@ -102,5 +102,6 @@ Zend OPcache
 - 分别在common\config目录和项目目录\config下建立main-local.php params-local.php文件
 - 重启nginx,输入你配置的域名即可以访问对应项目
 - 请注意，不能直接修改dev,beta,prod,stress,docker等配置文件，除了新加项，本地需要改配置的，统一走local文件 ，local文件已经加入git忽略，大家随便改，不会提交
+- 如果要运行swoole版本，CD到对应项目比如app/web下，执行php swoole.php start 即可
 
 
