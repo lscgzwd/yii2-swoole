@@ -1,22 +1,18 @@
 <?php
 return [
     'components' => [
-        'db'           => [
+        'db'       => [
             'class' => 'swoole\yii\db\Connection',
         ],
-        'request'      => [
+        'request'  => [
             'class'                  => 'swoole\yii\web\Request',
             'enableCookieValidation' => false,
         ],
-        'errorHandler' => [
-            'class'       => 'swoole\yii\web\ErrorHandler',
-            'errorAction' => 'site/error',
-        ],
-        'response'     => [
+        'response' => [
             'class'   => 'swoole\yii\web\Response',
             'charset' => 'UTF-8',
         ],
-        'redis'        => [
+        'redis'    => [
             'class' => 'swoole\yii\redis\Connection',
         ],
     ],

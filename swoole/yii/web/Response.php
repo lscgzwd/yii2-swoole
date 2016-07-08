@@ -8,6 +8,8 @@
 
 namespace swoole\yii\web;
 
+use swoole\EndException;
+use swoole\SwooleServer;
 use yii;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
@@ -48,6 +50,12 @@ class Response extends yii\web\Response
             $this->charset = \Yii::$app->charset;
         }
         $this->formatters = array_merge($this->defaultFormatters(), $this->formatters);
+    }
+
+    public function __destruct()
+    {
+        // TODO: Implement __destruct() method.
+        $this->clear();
     }
 
     /**
@@ -246,36 +254,146 @@ class Response extends yii\web\Response
      */
     protected function sendContent()
     {
-        if (!$this->swoole) {
-            print_r($this->data);
-            return;
+        SwooleServer::$swooleApp->currentSwooleResponse->end($this->content);
+    }
+    /**
+     * Sends a file to the browser.
+     *
+     * Note that this method only prepares the response for file sending. The file is not sent
+     * until [[send()]] is called explicitly or implicitly. The latter is done after you return from a controller action.
+     *
+     * @param string $filePath the path of the file to be sent.
+     * @param string $attachmentName the file name shown to the user. If null, it will be determined from `$filePath`.
+     * @param array $options additional options for sending the file. The following options are supported:
+     *
+     *  - `mimeType`: the MIME type of the content. If not set, it will be guessed based on `$filePath`
+     *  - `inline`: boolean, whether the browser should open the file within the browser window. Defaults to false,
+     *    meaning a download dialog will pop up.
+     *
+     * @return $this the response object itself
+     */
+    public function sendFile($filePath, $attachmentName = null, $options = [])
+    {
+        if (!isset($options['mimeType'])) {
+            $options['mimeType'] = yii\helpers\FileHelper::getMimeTypeByExtension($filePath);
         }
-        if ($this->stream === null) {
-            $this->swoole->write($this->content);
-            return;
+        if ($attachmentName === null) {
+            $attachmentName = basename($filePath);
         }
+        SwooleServer::$swooleApp->currentSwooleResponse->header('Content-disposition', 'attachment; filename="' . urlencode($attachmentName) . '.xlsx"');
+        SwooleServer::$swooleApp->currentSwooleResponse->header('Content-Type', $options['mimeType']);
+        SwooleServer::$swooleApp->currentSwooleResponse->header('Content-Transfer-Encoding', 'binary');
+        SwooleServer::$swooleApp->currentSwooleResponse->header('Cache-Control', 'must-revalidate');
+        SwooleServer::$swooleApp->currentSwooleResponse->header('Pragma', 'public');
+        SwooleServer::$swooleApp->currentSwooleResponse->sendfile($filePath);
+        throw new EndException(); // 退出后续执行
+    }
+    /**
+     * Sends existing file to a browser as a download using x-sendfile.
+     *
+     * X-Sendfile is a feature allowing a web application to redirect the request for a file to the webserver
+     * that in turn processes the request, this way eliminating the need to perform tasks like reading the file
+     * and sending it to the user. When dealing with a lot of files (or very big files) this can lead to a great
+     * increase in performance as the web application is allowed to terminate earlier while the webserver is
+     * handling the request.
+     *
+     * The request is sent to the server through a special non-standard HTTP-header.
+     * When the web server encounters the presence of such header it will discard all output and send the file
+     * specified by that header using web server internals including all optimizations like caching-headers.
+     *
+     * As this header directive is non-standard different directives exists for different web servers applications:
+     *
+     * - Apache: [X-Sendfile](http://tn123.org/mod_xsendfile)
+     * - Lighttpd v1.4: [X-LIGHTTPD-send-file](http://redmine.lighttpd.net/projects/lighttpd/wiki/X-LIGHTTPD-send-file)
+     * - Lighttpd v1.5: [X-Sendfile](http://redmine.lighttpd.net/projects/lighttpd/wiki/X-LIGHTTPD-send-file)
+     * - Nginx: [X-Accel-Redirect](http://wiki.nginx.org/XSendfile)
+     * - Cherokee: [X-Sendfile and X-Accel-Redirect](http://www.cherokee-project.com/doc/other_goodies.html#x-sendfile)
+     *
+     * So for this method to work the X-SENDFILE option/module should be enabled by the web server and
+     * a proper xHeader should be sent.
+     *
+     * **Note**
+     *
+     * This option allows to download files that are not under web folders, and even files that are otherwise protected
+     * (deny from all) like `.htaccess`.
+     *
+     * **Side effects**
+     *
+     * If this option is disabled by the web server, when this method is called a download configuration dialog
+     * will open but the downloaded file will have 0 bytes.
+     *
+     * **Known issues**
+     *
+     * There is a Bug with Internet Explorer 6, 7 and 8 when X-SENDFILE is used over an SSL connection, it will show
+     * an error message like this: "Internet Explorer was not able to open this Internet site. The requested site
+     * is either unavailable or cannot be found.". You can work around this problem by removing the `Pragma`-header.
+     *
+     * **Example**
+     *
+     * ~~~
+     * Yii::$app->response->xSendFile('/home/user/Pictures/picture1.jpg');
+     * ~~~
+     *
+     * @param string $filePath file name with full path
+     * @param string $attachmentName file name shown to the user. If null, it will be determined from `$filePath`.
+     * @param array $options additional options for sending the file. The following options are supported:
+     *
+     *  - `mimeType`: the MIME type of the content. If not set, it will be guessed based on `$filePath`
+     *  - `inline`: boolean, whether the browser should open the file within the browser window. Defaults to false,
+     *    meaning a download dialog will pop up.
+     *  - xHeader: string, the name of the x-sendfile header. Defaults to "X-Sendfile".
+     *
+     * @return $this the response object itself
+     */
+    public function xSendFile($filePath, $attachmentName = null, $options = [])
+    {
+        $this->sendFile($filePath, $attachmentName, $options);
+    }
+    /**
+     * Sends the specified stream as a file to the browser.
+     *
+     * Note that this method only prepares the response for file sending. The file is not sent
+     * until [[send()]] is called explicitly or implicitly. The latter is done after you return from a controller action.
+     *
+     * @param resource $handle the handle of the stream to be sent.
+     * @param string $attachmentName the file name shown to the user.
+     * @param array $options additional options for sending the file. The following options are supported:
+     *
+     *  - `mimeType`: the MIME type of the content. Defaults to 'application/octet-stream'.
+     *  - `inline`: boolean, whether the browser should open the file within the browser window. Defaults to false,
+     *    meaning a download dialog will pop up.
+     *  - `fileSize`: the size of the content to stream this is useful when size of the content is known
+     *    and the content is not seekable. Defaults to content size using `ftell()`.
+     *    This option is available since version 2.0.4.
+     *
+     * @return $this the response object itself
+     * @throws yii\web\HttpException if the requested range cannot be satisfied.
+     */
+    public function sendStreamAsFile($handle, $attachmentName, $options = [])
+    {
+        throw new yii\base\Exception('Not Support:' . __METHOD__);
+    }
 
-        set_time_limit(0); // Reset time limit for big files
-        $chunkSize = 8 * 1024 * 1024; // 8MB per chunk
-
-        if (is_array($this->stream)) {
-            list($handle, $begin, $end) = $this->stream;
-            fseek($handle, $begin);
-            while (!feof($handle) && ($pos = ftell($handle)) <= $end) {
-                if ($pos + $chunkSize > $end) {
-                    $chunkSize = $end - $pos + 1;
-                }
-                $this->swoole->write(fread($handle, $chunkSize));
-                flush(); // Free up memory. Otherwise large files will trigger PHP's memory limit.
-            }
-            fclose($handle);
-        } else {
-            while (!feof($this->stream)) {
-                $this->swoole->write(fread($this->stream, $chunkSize));
-                flush();
-            }
-            fclose($this->stream);
-        }
+    /**
+     * Sends the specified content as a file to the browser.
+     *
+     * Note that this method only prepares the response for file sending. The file is not sent
+     * until [[send()]] is called explicitly or implicitly. The latter is done after you return from a controller action.
+     *
+     * @param string $content the content to be sent. The existing [[content]] will be discarded.
+     * @param string $attachmentName the file name shown to the user.
+     * @param array $options additional options for sending the file. The following options are supported:
+     *
+     *  - `mimeType`: the MIME type of the content. Defaults to 'application/octet-stream'.
+     *  - `inline`: boolean, whether the browser should open the file within the browser window. Defaults to false,
+     *    meaning a download dialog will pop up.
+     *
+     * @return $this the response object itself
+     * @throws yii\web\HttpException if the requested range is not satisfiable
+     */
+    public function sendContentAsFile($content, $attachmentName, $options = [])
+    {
+        throw new yii\base\Exception('Not Support:' . __METHOD__);
     }
 
 }

@@ -51,6 +51,13 @@ class Request extends \yii\web\Request
         $this->_csrfToken    = null;
         $this->swoole        = null;
     }
+
+    public function __destruct()
+    {
+        unset($this->swoole);
+        // TODO: Implement __destruct() method.
+    }
+
     /**
      * 设置swoole输出类
      * @param \Swoole\Http\Request $response
@@ -78,7 +85,7 @@ class Request extends \yii\web\Request
         $result = \Yii::$app->getUrlManager()->parseRequest($this);
         if ($result !== false) {
             list($route, $params) = $result;
-            $get                  = isset($this->swoole->get) && is_array($this->swoole->get) ? $this->swoole->get : [];
+            $get                  = $_GET;
             $get                  = $params + $get; // preserve numeric keys
             return [$route, $get];
         } else {
@@ -315,7 +322,7 @@ class Request extends \yii\web\Request
     public function getQueryParams()
     {
         if ($this->_queryParams === null) {
-            return isset($this->swoole->get) && is_array($this->swoole->get) ? $this->swoole->get : [];
+            return $_GET;
         }
         return $this->_queryParams;
     }

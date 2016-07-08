@@ -45,10 +45,8 @@ class Application extends \yii\web\Application
             return $response->exitStatus;
 
         } catch (ExitException $e) {
-
             $this->end($e->statusCode, isset($response) ? $response : null);
             return $e->statusCode;
-
         }
     }
     /**

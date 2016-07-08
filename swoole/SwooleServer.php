@@ -15,6 +15,7 @@ use Swoole\Http\Server as SwooleHttpServer;
 use swoole\yii\Application;
 use Yii;
 use yii\base\Exception;
+use yii\base\ExitException;
 
 /**
  * Class SwooleServer
@@ -30,7 +31,7 @@ class SwooleServer
      * instance of Swoole\Http\Server
      * @var null
      */
-    public static $swooleServer = null;
+    public $swooleServer = null;
     /**
      * @var null PID file for storage master pid
      */
@@ -92,7 +93,8 @@ class SwooleServer
                 break;
             case 'reload':
                 if (!empty($masterPid)) {
-                    posix_kill($masterPid, SIGUSR1);
+                    posix_kill($masterPid, SIGUSR1); // 重启所有worker
+                    posix_kill($masterPid, SIGUSR2); // 重启所有task
                 } else {
                     print_r('master pid is null, maybe you delete the pid file we created. you can manually kill the master process with signal SIGUSR1.');
                 }
@@ -113,17 +115,17 @@ class SwooleServer
     public function startSwooleServer($swooleConfig)
     {
         // 创建swoole\http\server实例
-        self::$swooleServer = new SwooleHttpServer($swooleConfig['host'], $swooleConfig['port']);
-        self::$swooleServer->set($swooleConfig['setting']);
-        self::$swooleServer->on('Start', [$this, 'onStart']);
-        self::$swooleServer->on('Shutdown', [$this, 'onShutdown']);
-        self::$swooleServer->on('Task', [$this, 'onTask']);
-        self::$swooleServer->on('Finish', [$this, 'onTaskFinish']);
-        self::$swooleServer->on('ManagerStart', [$this, 'onManagerStart']);
-        self::$swooleServer->on('WorkerStart', [$this, 'onWorkerStart']);
-        self::$swooleServer->on('Request', [$this, 'onRequest']);
-        self::$swooleServer->setGlobal(HTTP_GLOBAL_ALL);
-        self::$swooleServer->start();
+        $swooleServer = new SwooleHttpServer($swooleConfig['host'], $swooleConfig['port']);
+        $swooleServer->set($swooleConfig['setting']);
+        $swooleServer->on('Start', [$this, 'onStart']);
+        $swooleServer->on('Shutdown', [$this, 'onShutdown']);
+        $swooleServer->on('Task', [$this, 'onTask']);
+        $swooleServer->on('Finish', [$this, 'onTaskFinish']);
+        $swooleServer->on('ManagerStart', [$this, 'onManagerStart']);
+        $swooleServer->on('WorkerStart', [$this, 'onWorkerStart']);
+        $swooleServer->on('Request', [$this, 'onRequest']);
+        $this->swooleServer = $swooleServer;
+        $this->swooleServer->start();
     }
 
     /**
@@ -133,8 +135,23 @@ class SwooleServer
      */
     public function onRequest(Request $request, Response $response)
     {
-        // 重置yii/web/request yii/web/response类
-        $this->clearRequestAndResponse();
+        $_GET    = isset($request->get) ? $request->get : [];
+        $_POST   = isset($request->post) ? $request->post : [];
+        $_SERVER = array_change_key_case($request->server, CASE_UPPER);
+        $_FILES  = isset($request->files) ? $request->files : [];
+        $_COOKIE = isset($request->cookie) ? $request->cookie : [];
+        if (isset($request->header)) {
+            foreach ($request->header as $key => $value) {
+                $key           = 'HTTP_' . strtoupper(str_replace('-', '_', $key));
+                $_SERVER[$key] = $value;
+            }
+        }
+        // swoole fix
+        $_SERVER['PHP_SELF']        = '/index.php';
+        $_SERVER['SCRIPT_NAME']     = '/index.php';
+        $_SERVER['SCRIPT_FILENAME'] = WEB_PATH . '/index.php';
+        $_SERVER['SERVER_NAME']     = 'qiye.jiedaibao.com';
+
         $this->logTraceId            = StringHelper::uuid();
         $this->currentSwooleRequest  = $request;
         $this->currentSwooleResponse = $response;
@@ -147,33 +164,26 @@ class SwooleServer
         try {
             Yii::$app->getRequest()->setSwooleRequest($request);
             Yii::$app->getResponse()->setSwooleResponse($response);
-            // 开启ob缓存，抓取中间的调试输出
-            ob_start();
+
             Yii::$app->run();
-            $content = ob_get_clean();
-            // 如果OB缓冲区有输出，则输出
-            if (isset($content[0])) {
-                $response->write($content);
-            }
             // 强制输出日志到文件
-            Yii::getLogger()->flush();
-            // 向浏览器端发送输出结束符
-            $response->end();
+            Yii::getLogger()->flush(true);
             $this->clearRequestAndResponse();
         } catch (\Exception $e) {
-            if ($e instanceof \yii\base\ExitException) {
-                // 记录日志，看是哪里调用的退出
+            if ($e instanceof ExitException) {
+                // 记录日志，看是哪里调用的退出 程序应该正常执行到控制器的最后一行代码，不应该直接exit
                 file_put_contents(self::$logFile, json_encode(
                     [
                         'time'    => date('Y-m-d H:i:s'),
                         'msg'     => $e->getMessage(),
                         'line'    => $e->getLine(),
                         'file'    => $e->getFile(),
-                        'request' => $request,
+                        'request' => get_object_vars($request),
                         'trace'   => $e->getTraceAsString(),
                         'linelog' => __LINE__,
                     ]) . PHP_EOL, FILE_APPEND);
-                $response->end();
+            } elseif ($e instanceof EndException) {
+                // 调用了sendfile后，直接退出sendfile后面不能有输出
             } else {
                 file_put_contents(self::$logFile, json_encode(
                     [
@@ -182,7 +192,8 @@ class SwooleServer
                         'line'    => $e->getLine(),
                         'file'    => $e->getFile(),
                         'trace'   => $e->getTraceAsString(),
-                        'request' => $request,
+                        'SERVER'  => $_SERVER,
+                        'request' => get_object_vars($request),
                         'linelog' => __LINE__,
                     ]) . PHP_EOL, FILE_APPEND);
                 $data = [
@@ -194,8 +205,8 @@ class SwooleServer
                     ],
                     'data'  => null,
                 ];
-                $response->write(json_encode($data));
-                $response->end();
+                $this->currentSwooleResponse->header('Conent-Type', 'application/json; charset=utf-8');
+                $response->end(json_encode($data));
                 unset($data);
             }
             $this->clearRequestAndResponse();
@@ -218,7 +229,7 @@ class SwooleServer
     /**
      * task异步任务回调，注意，如果异步任务非常耗时，需要开启足够多的task进程
      * 因为如果当前所有task进程都有任务在处理时，再投递会导致task退化成同步
-     * @param Server $serv
+     * @param SwooleHttpServer $serv
      * @param $taskId
      * @param $fromId
      * @param $data
@@ -240,20 +251,24 @@ class SwooleServer
                     'taskData' => $data,
                 ]) . PHP_EOL, FILE_APPEND);
         }
+        // 强制输出日志到文件
+        Yii::getLogger()->flush();
     }
 
     public function clearRequestAndResponse()
     {
         // 清空worker的请求和输出缓存
-        Yii::$app->getRequest()->clear();
-        Yii::$app->getResponse()->clear();
+        $config = Yii::$app->getComponents(true);
+        Yii::$app->set('request', $config['request']);
+        Yii::$app->set('response', $config['response']);
         $this->currentSwooleResponse = null;
         $this->currentSwooleRequest  = null;
+        unset($config);
     }
 
     /**
      * task执行完毕回调
-     * @param Server $serv
+     * @param SwooleHttpServer $serv
      * @param $taskId
      * @param $data
      */
@@ -264,11 +279,16 @@ class SwooleServer
 
     /**
      * 当worker进程启动时回调
-     * @param Server $serv
+     * @param SwooleHttpServer $serv
      * @param $workerId
      */
     public function onWorkerStart(SwooleHttpServer $serv, $workerId)
     {
+        // swoole fix
+        $_SERVER['PHP_SELF']        = '/index.php';
+        $_SERVER['SCRIPT_NAME']     = '/index.php';
+        $_SERVER['SCRIPT_FILENAME'] = WEB_PATH . '/index.php';
+
         // 设置进程标志
         global $argv;
         if ($workerId >= $serv->setting['worker_num']) {
@@ -285,17 +305,19 @@ class SwooleServer
         $application = new Application(self::$config);
         // 初使化组件
         foreach (self::$config['components'] as $id => $_config) {
+            if (!in_array($id, ['errorHandler'])) {
+                continue;
+            }
             $application->get($id);
         }
-        $application->swoole = self::$swooleServer;
-        $this->webRoot       = Yii::getAlias('@webroot');
+        $this->webRoot = WEB_PATH;
         set_error_handler([$this, 'onErrorHandler']);
         register_shutdown_function([$this, 'onFatalErrorShutdown']);
     }
 
     /**
      * 当manager进程启动时回调
-     * @param Server $server
+     * @param SwooleHttpServer $server
      */
     public function onManagerStart(SwooleHttpServer $server)
     {
@@ -397,7 +419,7 @@ class SwooleServer
 
     /**
      * 主进程主线程启动调用
-     * @param Server $server
+     * @param SwooleHttpServer $server
      */
     public function onStart(SwooleHttpServer $server)
     {
