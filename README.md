@@ -25,7 +25,7 @@ Requirements
 
 - PHP5.4+
 - MYSQL5.6+
-- php扩展列表：
+- php extensions
 * bcmath
 * bz2
 * calendar
@@ -79,7 +79,6 @@ Requirements
 * xmlwriter
 * xsl
 * yaml
-* Zend OPcache
 * zlib
 
 
