@@ -5,8 +5,14 @@ return [
     'bootstrap'           => ['log'],
     'controllerNamespace' => 'api\controllers',
     'modules'             => [
-        'v23' => [
-            'class' => 'api\modules\v23\Module',
+        'v01'   => [
+            'class' => 'api\modules\v0.1\Module',
+        ],
+        'inner' => [
+            'class' => 'api\modules\inner\Module',
+        ],
+        'oss'   => [
+            'class' => 'api\modules\oss\Module',
         ],
     ],
     'components'          => [
@@ -18,7 +24,9 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName'  => false,
             'rules'           => [
-                'v23/<controller:[\w-]+>/<action:[\w-]+>' => 'v23/<controller>/<action>',
+                'oss/<controller:[\w-]+>/<action:[\w-]+>'   => 'oss/<controller>/<action>',
+                'inner/<controller:[\w-]+>/<action:[\w-]+>' => 'inner/<controller>/<action>',
+                'v01/<controller:[\w-]+>/<action:[\w-]+>'   => 'v01/<controller>/<action>',
             ],
         ],
     ],

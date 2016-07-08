@@ -25,7 +25,7 @@ class Writer
     protected $sheetTemplate = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac" xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"><dimension ref="A1:{$maxCell}"/><sheetViews><sheetView tabSelected="{$tabSelected}" zoomScaleNormal="100" workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="13.8" x14ac:dyDescent="0.25"/><cols><col min="1" max="1025" width="15"/></cols><sheetData>{$rows}</sheetData><phoneticPr fontId="1" type="noConversion"/><pageMargins left="0.5" right="0.5" top="1" bottom="1" header="0.5" footer="0.5"/><pageSetup paperSize="9" orientation="portrait" useFirstPageNumber="1" r:id="rId1"/><headerFooter><oddHeader>&amp;C&amp;"Times New Roman,Regular"&amp;12&amp;A</oddHeader><oddFooter>&amp;C&amp;"Times New Roman,Regular"&amp;12Page &amp;P</oddFooter></headerFooter></worksheet>';
     protected $workbookTemplate = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x15" xmlns:x15="http://schemas.microsoft.com/office/spreadsheetml/2010/11/main"><fileVersion appName="xl" lastEdited="7" lowestEdited="7" rupBuild="16828"/><workbookPr defaultThemeVersion="164011"/><bookViews><workbookView xWindow="0" yWindow="0" windowWidth="17256" windowHeight="5616" tabRatio="212"/></bookViews><sheets>{$sheets}</sheets><calcPr calcId="0"/></workbook>';
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><fileVersion appName="Calc"/><workbookPr backupFile="false" showObjects="all" date1904="false"/><workbookProtection/><bookViews><workbookView activeTab="0" firstSheet="0" showHorizontalScroll="true" showSheetTabs="true" showVerticalScroll="true" tabRatio="212" windowHeight="8192" windowWidth="16384" xWindow="0" yWindow="0"/></bookViews><sheets>{$sheets}</sheets><calcPr iterateCount="100" refMode="A1" iterate="false" iterateDelta="0.001"/></workbook>';
 
     public function __construct()
     {
@@ -53,24 +53,25 @@ class Writer
             throw new Exception('Can not create zip file with filename:' . $fileName);
         }
         $this->fileName = $fileName;
-        $zip->addEmptyDir("docProps/");
-        $zip->addFromString("docProps/app.xml", $this->buildAppXML());
-        $zip->addFromString("docProps/core.xml", $this->buildCoreXML());
+        $zip->addEmptyDir('docProps/');
+        $zip->addFromString('docProps/app.xml', $this->buildAppXML());
+        $zip->addFromString('docProps/core.xml', $this->buildCoreXML());
 
-        $zip->addEmptyDir("_rels/");
-        $zip->addFromString("_rels/.rels", $this->buildRelationshipsXML());
+        $zip->addEmptyDir('_rels/');
+        $zip->addFromString('_rels/.rels', $this->buildRelationshipsXML());
 
-        $zip->addEmptyDir("xl/worksheets/");
+        $zip->addEmptyDir('xl/worksheets/');
         foreach ($this->sheets as $_key => $sheet) {
-            $__key = $_key + 1;
-            $zip->addFromString("xl/worksheets/sheet{$__key}.xml", $sheet['content']);
+            $zip->addFromString("xl/worksheets/" . $sheet['xmlname'], $sheet['content']);
         }
-        $zip->addFromString("xl/workbook.xml", $this->buildWorkbookXML());
-        $zip->addFromString("xl/styles.xml", $this->buildStylesXML());
-        $zip->addFromString("[Content_Types].xml", $this->buildContentTypesXML());
+        $zip->addFromString('xl/sharedStrings.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sst count="0" uniqueCount="0" xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"></sst>');
+        $zip->addFromString('xl/workbook.xml', $this->buildWorkbookXML());
+        $zip->addFromString('xl/styles.xml', $this->buildStylesXML());
+        $zip->addFromString('[Content_Types].xml', $this->buildContentTypesXML());
 
-        $zip->addEmptyDir("xl/_rels/");
-        $zip->addFromString("xl/_rels/workbook.xml.rels", $this->buildWorkbookRelsXML());
+        $zip->addEmptyDir('xl/_rels/');
+        $zip->addFromString('xl/_rels/workbook.xml.rels', $this->buildWorkbookRelsXML());
         $zip->close();
     }
 
@@ -84,14 +85,15 @@ class Writer
     protected function buildCoreXML()
     {
         $coreXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:creator>' . $this->xmlspecialchars($this->author) . '</dc:creator><cp:lastModifiedBy>jiedaibao</cp:lastModifiedBy><cp:revision>0</cp:revision><dcterms:created xsi:type="dcterms:W3CDTF">' . date("Y-m-d\TH:i:s.00\Z") . '</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">' . date("Y-m-d\TH:i:s.00\Z") . '</dcterms:modified></cp:coreProperties>';
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:creator>' . $this->xmlspecialchars($this->author) . '</dc:creator><cp:revision>0</cp:revision><dcterms:created xsi:type="dcterms:W3CDTF">' . date("Y-m-d\TH:i:s.00\Z") . '</dcterms:created></cp:coreProperties>';
         return $coreXml;
     }
 
     protected function buildRelationshipsXML()
     {
-        $relXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+        $relXml = '<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+</Relationships>';
         return $relXml;
     }
 
@@ -100,7 +102,7 @@ class Writer
         $xml    = $this->workbookTemplate;
         $sheets = '';
         foreach ($this->sheets as $_key => $sheet) {
-            $sheets .= '<sheet name="' . $this->xmlspecialchars($sheet['name']) . '" sheetId="' . ($_key + 1) . '" state="visible" r:id="rId' . ($_key + 1) . '"/>';
+            $sheets .= '<sheet name="' . $this->xmlspecialchars($sheet['name']) . '" sheetId="' . ($_key + 1) . '" state="visible" r:id="rId' . ($_key + 2) . '"/>';
         }
         $xml = str_replace('{$sheets}', $sheets, $xml);
         return $xml;
@@ -109,31 +111,40 @@ class Writer
     protected function buildStylesXML()
     {
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="GENERAL" /></numFmts><fonts count="4"><font><name val="Arial"/><charset val="1"/><family val="2"/><sz val="10"/></font><font><name val="Arial"/><family val="0"/><sz val="10"/></font><font><name val="Arial"/><family val="0"/><sz val="10"/></font><font><name val="Arial"/><family val="0"/><sz val="10"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border diagonalDown="false" diagonalUp="false"><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="20"><xf applyAlignment="true" applyBorder="true" applyFont="true" applyProtection="true" borderId="0" fillId="0" fontId="0" numFmtId="164"><alignment horizontal="general" indent="0" shrinkToFit="false" textRotation="0" vertical="bottom" wrapText="false"/><protection hidden="false" locked="true"/></xf><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="2" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="2" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="43"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="41"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="44"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="42"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="9"/></cellStyleXfs><cellXfs count="1"><xf applyAlignment="false" applyBorder="false" applyFont="false" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="164" xfId="0"/></cellXfs><cellStyles count="6"><cellStyle builtinId="0" customBuiltin="false" name="Normal" xfId="0"/><cellStyle builtinId="3" customBuiltin="false" name="Comma" xfId="15"/><cellStyle builtinId="6" customBuiltin="false" name="Comma [0]" xfId="16"/><cellStyle builtinId="4" customBuiltin="false" name="Currency" xfId="17"/><cellStyle builtinId="7" customBuiltin="false" name="Currency [0]" xfId="18"/><cellStyle builtinId="5" customBuiltin="false" name="Percent" xfId="19"/></cellStyles></styleSheet>';
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="1"><numFmt numFmtId="164" formatCode="GENERAL" /></numFmts><fonts count="4"><font><name val="Arial"/><charset val="1"/><family val="2"/><sz val="10"/></font><font><name val="Arial"/><family val="0"/><sz val="10"/></font><font><name val="Arial"/><family val="0"/><sz val="10"/></font><font><name val="Arial"/><family val="0"/><sz val="10"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border diagonalDown="false" diagonalUp="false"><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="20"><xf applyAlignment="true" applyBorder="true" applyFont="true" applyProtection="true" borderId="0" fillId="0" fontId="0" numFmtId="164"><alignment horizontal="general" indent="0" shrinkToFit="false" textRotation="0" vertical="bottom" wrapText="false"/><protection hidden="false" locked="true"/></xf><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="2" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="2" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="0"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="43"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="41"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="44"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="42"/><xf applyAlignment="false" applyBorder="false" applyFont="true" applyProtection="false" borderId="0" fillId="0" fontId="1" numFmtId="9"/></cellStyleXfs><cellXfs count="1"><xf applyAlignment="false" applyBorder="false" applyFont="false" applyProtection="false" borderId="0" fillId="0" fontId="0" numFmtId="164" xfId="0"/></cellXfs><cellStyles count="6"><cellStyle builtinId="0" customBuiltin="false" name="Normal" xfId="0"/><cellStyle builtinId="3" customBuiltin="false" name="Comma" xfId="15"/><cellStyle builtinId="6" customBuiltin="false" name="Comma [0]" xfId="16"/><cellStyle builtinId="4" customBuiltin="false" name="Currency" xfId="17"/><cellStyle builtinId="7" customBuiltin="false" name="Currency [0]" xfId="18"/><cellStyle builtinId="5" customBuiltin="false" name="Percent" xfId="19"/></cellStyles>
+</styleSheet>';
     }
 
     protected function buildWorkbookRelsXML()
     {
         $xml = '<?xml version="1.0" encoding="UTF-8"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>';
-
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+    <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>';
         foreach ($this->sheets as $_key => $sheet) {
-            $xml .= '<Relationship Id="rId' . ($_key + 2) . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' . ($_key + 1) . '.xml"/>';
+            $xml .= '    <Relationship Id="rId' . ($_key + 2) . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/' . ($sheet['xmlname']) . '"/>';
         }
-        $xml .= '</Relationships>';
+
+        $xml .= '    <Relationship Id="rId' . (count($this->sheets) + 2) . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>
+</Relationships>';
         return $xml;
     }
 
     protected function buildContentTypesXML()
     {
         $xml = '<?xml version="1.0" encoding="UTF-8"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/_rels/.rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Override PartName="/xl/_rels/workbook.xml.rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>{$sheets}<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
-</Types>';
-        $sheets = '';
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+    <Override PartName="/_rels/.rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+    <Override PartName="/xl/_rels/workbook.xml.rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+    <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>';
         foreach ($this->sheets as $_key => $sheet) {
-            $sheets .= '<Override PartName="/xl/worksheets/sheet' . strval($_key + 1) . '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+            $xml .= '<Override PartName="/xl/worksheets/' . ($sheet['xmlname']) . '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
         }
-        $xml = str_replace('{$sheets}', $sheets, $xml);
+        $xml .= '    <Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>
+    <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+    <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+    <Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
+ </Types>';
         return $xml;
     }
 
@@ -163,6 +174,7 @@ class Writer
         $content = str_replace('{$rows}', implode('', $rowStr), $content);
         $sheet   = [
             'name'    => $sheetName,
+            'xmlname' => 'sheet' . (count($this->sheets) + 1) . '.xml',
             'content' => $content,
         ];
         $this->sheets[] = $sheet;

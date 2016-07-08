@@ -11,13 +11,12 @@ use Yii;
 class ApiUserBaseController extends ApiBaseController
 {
 
-    private $_companyInfo = []; 
-    protected $companyId   = 0; //企业id
-    protected $memberId    = 0; //用户id
+    private $_companyInfo = [];
+    protected $companyId  = 0; //企业id
+    protected $memberId   = 0; //用户id
 
     public function beforeAction($action)
     {
-
         $request  = Yii::$app->request;
         $response = Yii::$app->getResponse();
         //访问类型校验
@@ -95,10 +94,14 @@ class ApiUserBaseController extends ApiBaseController
 
         return $this->companyInfo['oper_user_id'] === Yii::$app->request->post('memberID');
     }
-    protected function getCompanyInfo(){
-    	
-    	if(empty($this->_companyInfo))$this->_setCompanyInfo();
-    	return $this->_companyInfo;
+    protected function getCompanyInfo()
+    {
+
+        if (empty($this->_companyInfo)) {
+            $this->_setCompanyInfo();
+        }
+
+        return $this->_companyInfo;
     }
     private function _setCompanyInfo()
     {
@@ -108,8 +111,8 @@ class ApiUserBaseController extends ApiBaseController
             return false;
         }
 
-        $userService       = new UserService();
-        $params            = ['user_id' => Yii::$app->request->post('companyID')];
+        $userService        = new UserService();
+        $params             = ['user_id' => Yii::$app->request->post('companyID')];
         $this->_companyInfo = $userService->getCompanyInfo($params);
     }
 

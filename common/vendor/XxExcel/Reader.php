@@ -22,6 +22,7 @@ class Reader
     public $sheetInfos        = [];
     public $sharedStrings     = [];
     public $currentSheetDatas = [];
+    protected $maxRow         = 5000;
 
     /**
      * 读取一个excel2007文件
@@ -32,8 +33,12 @@ class Reader
         $zip = new \ZipArchive();
         $zip->open($filename);
         $this->zip = $zip;
-        $this->readSheetsNames();
         $this->readSharedString();
+    }
+
+    public function setMaxRow($number)
+    {
+        $this->maxRow = $number;
     }
 
     /**
@@ -54,7 +59,7 @@ class Reader
      * excel2007为了节约存储会把单元格信息抽取后存储在sharedString.xml中，如果单元格中有重复数据会节约存储
      * 解析sharedString.xml中的文本数据
      */
-    public function readSharedString()
+    protected function readSharedString()
     {
         $xml = new \XMLReader();
         $xml->XML($this->zip->getFromName('xl/sharedStrings.xml'));
@@ -89,6 +94,7 @@ class Reader
         $xml = new \XMLReader();
         $xml->XML($this->zip->getFromName($sheetFile));
         $rows = [];
+        $j    = 0;
         while ($xml->read()) {
             if ($xml->name == 'row' && $xml->nodeType == \XMLReader::ELEMENT) {
                 $rowXml = simplexml_load_string($xml->readOuterXml());
@@ -122,6 +128,10 @@ class Reader
                 }
 
                 unset($row, $rowXml);
+                $j++;
+                if ($j > $this->maxRow) {
+                    break;
+                }
             }
         }
         $this->currentSheetDatas[$this->currentSheet] = $rows;

@@ -12,6 +12,7 @@ class ApiBaseController extends BaseController
 {
     protected $needCheckSign     = true; // 是否需要验签
     protected $signExcludeFields = ['sign']; // 验签需要过滤的字段
+    protected $safeDateDiff      = 30; // 接口请求时间误差30秒
 
     /**
      * 控制器初使化方法
@@ -47,9 +48,11 @@ class ApiBaseController extends BaseController
      */
     public function checkSign()
     {
-        return true;
         $data = Yii::$app->getRequest()->getBodyParams();
         if (!isset($data['ts'])) {
+            return false;
+        }
+        if ($_SERVER['REQUEST_TIME'] - $data['ts'] > $this->safeDateDiff) {
             return false;
         }
         $_clientSign = $data['sign'];

@@ -160,7 +160,11 @@ class SwooleServer
             $this->clearRequestAndResponse();
             return;
         }
-        $_GET['REQUEST_TIME_BEGIN'] = $_POST['REQUEST_TIME_BEGIN'] = microtime(true);
+
+        $this->currentSwooleResponse->header('Access-Control-Allow-Origin', '*');
+        $this->currentSwooleResponse->header('Access-Control-Allow-Credentials', 'true');
+        $this->currentSwooleResponse->header('Conent-Type', 'application/json; charset=utf-8');
+
         try {
             Yii::$app->getRequest()->setSwooleRequest($request);
             Yii::$app->getResponse()->setSwooleResponse($response);
