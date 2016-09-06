@@ -85,9 +85,17 @@ Requirements
 Usage
 ------------
 
+- build swoole extension for php
+- set swoole.use_namespace = On
 - clone and download the code
-- add runtime.php to api/web with content return 'local';// local is the environment keyword, maybe dev or prod, etc.
-- if you environment is local, you need and main-local.php and params-local.php to common/config and api/config
+- add runtime.php to api/web with content 
+``` 
+<?php
+'local';
+```
+ local is the environment keyword, maybe dev or prod, nor beta, etc.
+- if you environment keyword is local, you need and main-local.php and params-local.php to common/config and api/config, if keyword is dev or other, you must make sure have main-keyword.php and params-keyword.php in api/config and common/config.
+- setting your environment config like mysql and redis connection information in your params-local.php
 - cd YOU_PATH/api/web , exec php swoole.php start
 - goto your web browser, visit http://127.0.0.1:9501/v01/demo/index
 - you can change the swoole config in params-*.php
