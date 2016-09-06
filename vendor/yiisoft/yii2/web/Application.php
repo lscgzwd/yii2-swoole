@@ -13,7 +13,10 @@ use yii\base\InvalidRouteException;
 /**
  * Application is the base class for all web application classes.
  *
+ * @property ErrorHandler $errorHandler The error handler application component. This property is read-only.
  * @property string $homeUrl The homepage URL.
+ * @property Request $request The request component. This property is read-only.
+ * @property Response $response The response component. This property is read-only.
  * @property Session $session The session component. This property is read-only.
  * @property User $user The user component. This property is read-only.
  *
@@ -34,13 +37,13 @@ class Application extends \yii\base\Application
      * The rest of the array elements (key-value pairs) specify the parameters to be bound
      * to the action. For example,
      *
-     * ~~~
+     * ```php
      * [
      *     'offline/notice',
      *     'param1' => 'value1',
      *     'param2' => 'value2',
      * ]
-     * ~~~
+     * ```
      *
      * Defaults to null, meaning catch-all is not used.
      */
@@ -79,11 +82,6 @@ class Application extends \yii\base\Application
             unset($params[0]);
         }
         try {
-            //处理#/deal-search 的情况
-            $tmp = explode("#", $route);
-            if (count($tmp)) {
-                $route = $tmp[0];
-            }
             Yii::trace("Route requested: '$route'", __METHOD__);
             $this->requestedRoute = $route;
             $result = $this->runAction($route, $params);
@@ -126,6 +124,33 @@ class Application extends \yii\base\Application
     public function setHomeUrl($value)
     {
         $this->_homeUrl = $value;
+    }
+
+    /**
+     * Returns the error handler component.
+     * @return ErrorHandler the error handler application component.
+     */
+    public function getErrorHandler()
+    {
+        return $this->get('errorHandler');
+    }
+
+    /**
+     * Returns the request component.
+     * @return Request the request component.
+     */
+    public function getRequest()
+    {
+        return $this->get('request');
+    }
+
+    /**
+     * Returns the response component.
+     * @return Response the response component.
+     */
+    public function getResponse()
+    {
+        return $this->get('response');
     }
 
     /**

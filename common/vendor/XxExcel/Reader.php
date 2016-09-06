@@ -9,7 +9,7 @@
 namespace common\vendor\XxExcel;
 
 /**
- * Class Reader excel2007 解析类
+ * Class Reader excel2007
  * @package common\vendor\XxExcel
  */
 class Reader
@@ -25,7 +25,7 @@ class Reader
     protected $maxRow         = 5000;
 
     /**
-     * 读取一个excel2007文件
+     * read an excel2007 file
      * @param $filename
      */
     public function open($filename)
@@ -42,7 +42,7 @@ class Reader
     }
 
     /**
-     * 读取sheet信息
+     * get the sheet info
      */
     public function readSheetsNames()
     {

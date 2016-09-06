@@ -97,7 +97,6 @@ class FileTarget extends Target
         }
     }
 
-
     /**
      * Writes log messages to a file.
      * @throws InvalidConfigException if unable to open the log file for writing

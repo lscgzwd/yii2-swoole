@@ -22,14 +22,14 @@ use yii\base\InvalidParamException;
  *
  * Session can be used like an array to set and get session data. For example,
  *
- * ~~~
+ * ```php
  * $session = new Session;
  * $session->open();
  * $value1 = $session['name1'];  // get session variable 'name1'
  * $value2 = $session['name2'];  // get session variable 'name2'
  * foreach ($session as $name => $value) // traverse all session variables
  * $session['name3'] = $value3;  // set session variable 'name3'
- * ~~~
+ * ```
  *
  * Session can be extended to support customized session storage.
  * To do so, override [[useCustomStorage]] so that it returns true, and
@@ -97,6 +97,10 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     {
         parent::init();
         register_shutdown_function([$this, 'close']);
+        if ($this->getIsActive()) {
+            Yii::warning('Session is already started', __METHOD__);
+            $this->updateFlashCounters();
+        }
     }
 
     /**
@@ -149,16 +153,27 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
             if (!$this->handler instanceof \SessionHandlerInterface) {
                 throw new InvalidConfigException('"' . get_class($this) . '::handler" must implement the SessionHandlerInterface.');
             }
-            @session_set_save_handler($this->handler, false);
+            YII_DEBUG ? session_set_save_handler($this->handler, false) : @session_set_save_handler($this->handler, false);
         } elseif ($this->getUseCustomStorage()) {
-            @session_set_save_handler(
-                [$this, 'openSession'],
-                [$this, 'closeSession'],
-                [$this, 'readSession'],
-                [$this, 'writeSession'],
-                [$this, 'destroySession'],
-                [$this, 'gcSession']
-            );
+            if (YII_DEBUG) {
+                session_set_save_handler(
+                    [$this, 'openSession'],
+                    [$this, 'closeSession'],
+                    [$this, 'readSession'],
+                    [$this, 'writeSession'],
+                    [$this, 'destroySession'],
+                    [$this, 'gcSession']
+                );
+            } else {
+                @session_set_save_handler(
+                    [$this, 'openSession'],
+                    [$this, 'closeSession'],
+                    [$this, 'readSession'],
+                    [$this, 'writeSession'],
+                    [$this, 'destroySession'],
+                    [$this, 'gcSession']
+                );
+            }
         }
     }
 
@@ -168,7 +183,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     public function close()
     {
         if ($this->getIsActive()) {
-            @session_write_close();
+            YII_DEBUG ? session_write_close() : @session_write_close();
         }
     }
 
@@ -178,8 +193,10 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
     public function destroy()
     {
         if ($this->getIsActive()) {
-            @session_unset();
-            @session_destroy();
+            YII_DEBUG ? session_unset() : @session_unset();
+            $sessionId = session_id();
+            YII_DEBUG ? session_destroy() : @session_destroy();
+            YII_DEBUG ? session_id($sessionId) : @session_id($sessionId);
         }
     }
 
@@ -188,7 +205,7 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
      */
     public function getIsActive()
     {
-        return session_status() == PHP_SESSION_ACTIVE;
+        return session_status() === PHP_SESSION_ACTIVE;
     }
 
     private $_hasSessionId;
@@ -255,9 +272,15 @@ class Session extends Component implements \IteratorAggregate, \ArrayAccess, \Co
      */
     public function regenerateID($deleteOldSession = false)
     {
-        // add @ to inhibit possible warning due to race condition
-        // https://github.com/yiisoft/yii2/pull/1812
-        @session_regenerate_id($deleteOldSession);
+        if ($this->getIsActive()) {
+            // add @ to inhibit possible warning due to race condition
+            // https://github.com/yiisoft/yii2/pull/1812
+            if (YII_DEBUG && !headers_sent()) {
+                session_regenerate_id($deleteOldSession);
+            } else {
+                @session_regenerate_id($deleteOldSession);
+            }
+        }
     }
 
     /**

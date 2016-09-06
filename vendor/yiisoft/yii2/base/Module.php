@@ -74,15 +74,15 @@ class Module extends ServiceLocator
      * the controller's fully qualified class name, and the rest of the name-value pairs
      * in the array are used to initialize the corresponding controller properties. For example,
      *
-     * ~~~
+     * ```php
      * [
-     *   'account' => 'apps\controllers\UserController',
+     *   'account' => 'app\controllers\UserController',
      *   'article' => [
-     *      'class' => 'apps\controllers\PostController',
+     *      'class' => 'app\controllers\PostController',
      *      'pageTitle' => 'something new',
      *   ],
      * ]
-     * ~~~
+     * ```
      */
     public $controllerMap = [];
     /**
@@ -124,6 +124,7 @@ class Module extends ServiceLocator
      */
     private $_modules = [];
 
+
     /**
      * Constructor.
      * @param string $id the ID of this module
@@ -132,7 +133,7 @@ class Module extends ServiceLocator
      */
     public function __construct($id, $parent = null, $config = [])
     {
-        $this->id     = $id;
+        $this->id = $id;
         $this->module = $parent;
         parent::__construct($config);
     }
@@ -200,7 +201,7 @@ class Module extends ServiceLocator
     public function getBasePath()
     {
         if ($this->_basePath === null) {
-            $class           = new \ReflectionClass($this);
+            $class = new \ReflectionClass($this);
             $this->_basePath = dirname($class->getFileName());
         }
 
@@ -216,7 +217,7 @@ class Module extends ServiceLocator
     public function setBasePath($path)
     {
         $path = Yii::getAlias($path);
-        $p    = realpath($path);
+        $p = strncmp($path, 'phar://', 7) === 0 ? $path : realpath($path);
         if ($p !== false && is_dir($p)) {
             $this->_basePath = $p;
         } else {
@@ -242,11 +243,10 @@ class Module extends ServiceLocator
      */
     public function getViewPath()
     {
-        if ($this->_viewPath !== null) {
-            return $this->_viewPath;
-        } else {
-            return $this->_viewPath = $this->getBasePath() . DIRECTORY_SEPARATOR . 'views';
+        if ($this->_viewPath === null) {
+            $this->_viewPath = $this->getBasePath() . DIRECTORY_SEPARATOR . 'views';
         }
+        return $this->_viewPath;
     }
 
     /**
@@ -265,11 +265,11 @@ class Module extends ServiceLocator
      */
     public function getLayoutPath()
     {
-        if ($this->_layoutPath !== null) {
-            return $this->_layoutPath;
-        } else {
-            return $this->_layoutPath = $this->getViewPath() . DIRECTORY_SEPARATOR . 'layouts';
+        if ($this->_layoutPath === null) {
+            $this->_layoutPath = $this->getViewPath() . DIRECTORY_SEPARATOR . 'layouts';
         }
+
+        return $this->_layoutPath;
     }
 
     /**
@@ -293,12 +293,12 @@ class Module extends ServiceLocator
      * (must start with '@') and the array values are the corresponding paths or aliases.
      * For example,
      *
-     * ~~~
+     * ```php
      * [
      *     '@models' => '@app/models', // an existing alias
      *     '@backend' => __DIR__ . '/../backend',  // a directory
      * ]
-     * ~~~
+     * ```
      */
     public function setAliases($aliases)
     {
@@ -414,15 +414,15 @@ class Module extends ServiceLocator
      *
      * The following is an example for registering two sub-modules:
      *
-     * ~~~
+     * ```php
      * [
      *     'comment' => [
-     *         'class' => 'apps\modules\comment\CommentModule',
+     *         'class' => 'app\modules\comment\CommentModule',
      *         'db' => 'db',
      *     ],
-     *     'booking' => ['class' => 'apps\modules\booking\BookingModule'],
+     *     'booking' => ['class' => 'app\modules\booking\BookingModule'],
      * ]
-     * ~~~
+     * ```
      *
      * @param array $modules modules (id => module configuration or instances)
      */
@@ -449,10 +449,10 @@ class Module extends ServiceLocator
         if (is_array($parts)) {
             /* @var $controller Controller */
             list($controller, $actionID) = $parts;
-            $oldController               = Yii::$app->controller;
-            Yii::$app->controller        = $controller;
-            $result                      = $controller->runAction($actionID, $params);
-            Yii::$app->controller        = $oldController;
+            $oldController = Yii::$app->controller;
+            Yii::$app->controller = $controller;
+            $result = $controller->runAction($actionID, $params);
+            Yii::$app->controller = $oldController;
 
             return $result;
         } else {
@@ -496,9 +496,9 @@ class Module extends ServiceLocator
         }
 
         if (strpos($route, '/') !== false) {
-            list($id, $route) = explode('/', $route, 2);
+            list ($id, $route) = explode('/', $route, 2);
         } else {
-            $id    = $route;
+            $id = $route;
             $route = '';
         }
 
@@ -520,7 +520,7 @@ class Module extends ServiceLocator
         $controller = $this->createControllerByID($id);
         if ($controller === null && $route !== '') {
             $controller = $this->createControllerByID($id . '/' . $route);
-            $route      = '';
+            $route = '';
         }
 
         return $controller === null ? false : [$controller, $route];
@@ -543,10 +543,10 @@ class Module extends ServiceLocator
     {
         $pos = strrpos($id, '/');
         if ($pos === false) {
-            $prefix    = '';
+            $prefix = '';
             $className = $id;
         } else {
-            $prefix    = substr($id, 0, $pos + 1);
+            $prefix = substr($id, 0, $pos + 1);
             $className = substr($id, $pos + 1);
         }
 
@@ -558,7 +558,7 @@ class Module extends ServiceLocator
         }
 
         $className = str_replace(' ', '', ucwords(str_replace('-', ' ', $className))) . 'Controller';
-        $className = ltrim($this->controllerNamespace . '\\' . str_replace('/', '\\', $prefix) . $className, '\\');
+        $className = ltrim($this->controllerNamespace . '\\' . str_replace('/', '\\', $prefix)  . $className, '\\');
         if (strpos($className, '-') !== false || !class_exists($className)) {
             return null;
         }
@@ -630,7 +630,7 @@ class Module extends ServiceLocator
      */
     public function afterAction($action, $result)
     {
-        $event         = new ActionEvent($action);
+        $event = new ActionEvent($action);
         $event->result = $result;
         $this->trigger(self::EVENT_AFTER_ACTION, $event);
         return $event->result;

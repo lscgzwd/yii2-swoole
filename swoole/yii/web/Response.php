@@ -59,7 +59,7 @@ class Response extends yii\web\Response
     }
 
     /**
-     * 设置swoole输出类
+     * set the current swoole response
      * @param \Swoole\Http\Response $response
      */
     public function setSwooleResponse(\Swoole\Http\Response $response)
@@ -68,7 +68,7 @@ class Response extends yii\web\Response
     }
 
     /**
-     * 获取swoole输出类
+     * get the current swoole response
      * @return \Swoole\Http\Response
      */
     public function getSwooleResponse()
@@ -286,7 +286,7 @@ class Response extends yii\web\Response
         SwooleServer::$swooleApp->currentSwooleResponse->header('Cache-Control', 'must-revalidate');
         SwooleServer::$swooleApp->currentSwooleResponse->header('Pragma', 'public');
         SwooleServer::$swooleApp->currentSwooleResponse->sendfile($filePath);
-        throw new EndException(); // 退出后续执行
+        throw new EndException(); // when called Swoole::sendfile , we must end the request
     }
     /**
      * Sends existing file to a browser as a download using x-sendfile.

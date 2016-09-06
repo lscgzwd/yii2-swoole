@@ -41,7 +41,7 @@ class HttpBasicAuth extends AuthMethod
      *
      * ```php
      * function ($username, $password) {
-     *     return \apps\models\User::findOne([
+     *     return \app\models\User::findOne([
      *         'username' => $username,
      *         'password' => $password,
      *     ]);
@@ -53,6 +53,7 @@ class HttpBasicAuth extends AuthMethod
      * method will be called to authenticate and login the user.
      */
     public $auth;
+
 
     /**
      * @inheritdoc

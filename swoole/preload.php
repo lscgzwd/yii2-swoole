@@ -1,6 +1,6 @@
 <?php
 /**
- * 预加载所有类，针对swoole提供性能
+ * preload all classes , speed it
  * User: lusc
  * Date: 2016/5/12
  * Time: 20:45

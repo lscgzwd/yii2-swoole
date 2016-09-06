@@ -50,7 +50,7 @@ class Controller extends Component implements ViewContextInterface
      */
     public $defaultAction = 'index';
     /**
-     * @var string|boolean the name of the layout to be applied to this controller's views.
+     * @var null|string|false the name of the layout to be applied to this controller's views.
      * This property mainly affects the behavior of [[render()]].
      * Defaults to null, meaning the actual layout value should inherit that from [[module]]'s layout value.
      * If false, no layout will be applied.
@@ -71,6 +71,7 @@ class Controller extends Component implements ViewContextInterface
      */
     private $_viewPath;
 
+
     /**
      * @param string $id the ID of this controller.
      * @param Module $module the module that this controller belongs to.
@@ -78,7 +79,7 @@ class Controller extends Component implements ViewContextInterface
      */
     public function __construct($id, $module, $config = [])
     {
-        $this->id     = $id;
+        $this->id = $id;
         $this->module = $module;
         parent::__construct($config);
     }
@@ -130,10 +131,10 @@ class Controller extends Component implements ViewContextInterface
             Yii::$app->requestedAction = $action;
         }
 
-        $oldAction    = $this->action;
+        $oldAction = $this->action;
         $this->action = $action;
 
-        $modules   = [];
+        $modules = [];
         $runAction = true;
 
         // call beforeAction on modules
@@ -247,7 +248,7 @@ class Controller extends Component implements ViewContextInterface
      * public function beforeAction($action)
      * {
      *     // your custom code here, if you want the code to run before action filters,
-     *     // wich are triggered on the [[EVENT_BEFORE_ACTION]] event, e.g. PageCache or AccessControl
+     *     // which are triggered on the [[EVENT_BEFORE_ACTION]] event, e.g. PageCache or AccessControl
      *
      *     if (!parent::beforeAction($action)) {
      *         return false;
@@ -292,7 +293,7 @@ class Controller extends Component implements ViewContextInterface
      */
     public function afterAction($action, $result)
     {
-        $event         = new ActionEvent($action);
+        $event = new ActionEvent($action);
         $event->result = $result;
         $this->trigger(self::EVENT_AFTER_ACTION, $event);
         return $event->result;
@@ -307,7 +308,7 @@ class Controller extends Component implements ViewContextInterface
     public function getModules()
     {
         $modules = [$this->module];
-        $module  = $this->module;
+        $module = $this->module;
         while ($module->module !== null) {
             array_unshift($modules, $module->module);
             $module = $module->module;
@@ -316,6 +317,7 @@ class Controller extends Component implements ViewContextInterface
     }
 
     /**
+     * Returns the unique ID of the controller.
      * @return string the controller ID that is prefixed with the module ID (if any).
      */
     public function getUniqueId()

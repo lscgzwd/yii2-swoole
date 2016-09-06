@@ -1,6 +1,6 @@
 <?php
 /**
- * 命令行定时任务基础控制器
+ * Base Controller for Console
  * User: lusc
  * Date: 2016/5/5
  * Time: 22:38
@@ -12,5 +12,5 @@ use yii\console\Controller;
 
 class ConsoleController extends Controller
 {
-
+    use BaseControllerTrait;
 }

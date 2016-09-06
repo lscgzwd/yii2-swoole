@@ -1,6 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
+ * Api request base class
  * User: lusc
  * Date: 2016/5/17
  * Time: 16:21
@@ -8,23 +8,26 @@
 
 namespace common\service\api;
 
-use apps\lib\Trace;
+use common\constants\ModelConst;
+use common\helpers\Trace;
 use yii\base\Exception;
 use yii\httpclient\Client;
 
 /**
- * 请求第三方接口抽象类
+ * Api request base
  * Class ApiAbstract
  * @package common\service\api
  */
 class ApiAbstract
 {
-    public $key; // api签名密钥
+    public $key; // api sign key
     public $baseUrl; // api base url
-    public $dataType    = 'json'; //  json, xml，返回数据格式
-    public $contentType = 'urlencoded'; // 请求类容的格式 urlencoded json xml
-    public $debug       = false;
-    protected $config   = [];
+    public $dataType          = 'json'; //  json, xml，Content-Type
+    public $contentType       = 'urlencoded'; // request data type urlencoded json xml
+    public $debug             = false;
+    protected $config         = [];
+    protected $noNeedSignKeys = ['datas'];
+    protected $apiModuel;
     /**
      * curl options
      */
@@ -60,6 +63,7 @@ class ApiAbstract
             'responseConfig' => [
                 'format' => $this->dataType,
             ],
+            'transport'      => 'yii\httpclient\CurlTransport',
         ]);
     }
 
@@ -70,11 +74,18 @@ class ApiAbstract
      */
     protected function getSign(array &$data)
     {
-        if (!isset($data['ts'])) {
-            $data['ts'] = time();
+        foreach ($data as $key => $item) {
+            if (!in_array($key, $this->noNeedSignKeys)) {
+                $tmp[$key] = $item;
+            }
         }
-        ksort($data);
-        $sign         = md5(join('|', $data) . '|' . $this->key);
+
+        if (!isset($data['ts'])) {
+            $tmp['ts'] = time();
+        }
+        ksort($tmp);
+        $sign         = md5(join('|', $tmp) . '|' . $this->key);
+        $data['ts']   = $tmp['ts'];
         $data['sign'] = $sign;
     }
 
@@ -100,7 +111,13 @@ class ApiAbstract
 
     protected function parseResponse($res)
     {
-        return $res;
+        if (isset($res['error']['returnCode']) && is_numeric($res['error']['returnCode']) && $res['error']['returnCode'] == 0) {
+            return ['errno' => 200, 'msg' => 'ok', 'data' => isset($res['data']) ? $res['data'] : [], 'originCode' => 0];
+        } else {
+            $code = isset($res['error']['returnCode']) ? $res['error']['returnCode'] : 500;
+            $msg  = isset($res['error']['returnUserMessage']) ? $res['error']['returnUserMessage'] : '数据请求错误';
+            return ['errno' => $code, 'msg' => $msg, 'data' => isset($res['data']) ? $res['data'] : [], 'originCode' => $res['error']['returnCode']];
+        }
     }
 
     /**
@@ -116,14 +133,21 @@ class ApiAbstract
     {
         $this->getSign($param);
         try {
-            Trace::addLog('common_service_api_request_begin', 'info', [
-                'params'  => $param,
+            $timeStart   = microtime(true) * 1000;
+            $tmpReqParam = $param;
+            if (get_class($this) == 'common\service\api\PaymentNasApiService') {
+                unset($tmpReqParam['datas']);
+            }
+            $requestLog = [
+                'params'  => $tmpReqParam,
                 'method'  => $method,
                 'cookie'  => $cookie,
                 'header'  => $header,
                 'uri'     => $uri,
+                'class'   => get_class($this),
                 'baseUrl' => $this->baseUrl,
-            ]);
+            ];
+            Trace::addLog('common_service_api_request_begin', 'info', $requestLog);
             $request = $this->client->createRequest()->setOptions($this->curlOptions)->setMethod($method)->setUrl($uri)->setData($param);
             if (!empty($cookie)) {
                 $this->client->addCookies($cookie);
@@ -132,19 +156,30 @@ class ApiAbstract
                 $this->client->addHeaders($header);
             }
             $response = $this->client->send($request);
-            Trace::addLog('common_service_api_request_end', 'info', [
-                'params'   => $param,
+            $resData  = $response->getData();
+
+            $tmpRes = $resData;
+            if (get_class($this) == 'common\service\api\PaymentNasApiService') {
+                unset($tmpRes['datas']);
+            }
+            $responseLog = [
+                'params'   => $tmpReqParam,
                 'method'   => $method,
                 'cookie'   => $cookie,
                 'header'   => $header,
                 'uri'      => $uri,
+                'class'    => get_class($this),
                 'baseUrl'  => $this->baseUrl,
-                'response' => $response->data,
-            ]);
-            if ($response->isOk && !empty($response->data)) {
-                return $this->parseResponse($response->data);
+                'response' => $tmpRes,
+                'timecost' => microtime(true) * 1000 - $timeStart,
+            ];
+            Trace::addLog('common_service_api_request_end', 'info', $responseLog);
+            unset($tmpReqParam);
+
+            if ($response->isOk && !empty($resData)) {
+                return $this->parseResponse($resData);
             } else {
-                return false;
+                return ModelConst::getResult(ModelConst::G_API_ERROR);
             }
         } catch (\Exception $e) {
             Trace::addLog('common_service_api_request_exception', 'error', [
@@ -152,12 +187,13 @@ class ApiAbstract
                 'method'    => $method,
                 'cookie'    => $cookie,
                 'header'    => $header,
+                'class'     => get_class($this),
                 'uri'       => $uri,
                 'baseUrl'   => $this->baseUrl,
+                'rawReturn' => isset($response) ? $response->getContent() : '',
                 'exception' => $e->__toString(),
             ]);
         }
-
-        return false;
+        return ModelConst::getResult(ModelConst::G_API_ERROR);
     }
 }

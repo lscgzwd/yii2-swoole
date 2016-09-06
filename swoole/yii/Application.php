@@ -8,6 +8,7 @@
 
 namespace swoole\yii;
 
+use swoole\yii\web\Response;
 use Yii;
 use yii\base\ExitException;
 

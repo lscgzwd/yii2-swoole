@@ -10,6 +10,7 @@ namespace yii\log;
 use Yii;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use yii\helpers\ArrayHelper;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -56,9 +57,19 @@ abstract class Target extends Component
     /**
      * @var array list of the PHP predefined variables that should be logged in a message.
      * Note that a variable must be accessible via `$GLOBALS`. Otherwise it won't be logged.
+     *
      * Defaults to `['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER']`.
+     *
+     * Since version 2.0.9 additional syntax can be used:
+     * Each element could be specified as one of the following:
+     *
+     * - `var` - `var` will be logged.
+     * - `var.key` - only `var[key]` key will be logged.
+     * - `!var.key` - `var[key]` key will be excluded.
+     *
+     * @see \yii\helpers\ArrayHelper::filter()
      */
-    public $logVars = ['_GET', '_POST', '_FILES', '_COOKIE'];
+    public $logVars = ['_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_SERVER'];
     /**
      * @var callable a PHP callable that returns a string to be prefixed to every exported message.
      *
@@ -99,7 +110,7 @@ abstract class Target extends Component
      */
     public function collect($messages, $final)
     {
-        $this->messages = array_merge($this->messages, $this->filterMessages($messages, $this->getLevels(), $this->categories, $this->except));
+        $this->messages = array_merge($this->messages, static::filterMessages($messages, $this->getLevels(), $this->categories, $this->except));
         $count = count($this->messages);
         if ($count > 0 && ($final || $this->exportInterval > 0 && $count >= $this->exportInterval)) {
             if (($context = $this->getContextMessage()) !== '') {
@@ -122,14 +133,12 @@ abstract class Target extends Component
      */
     protected function getContextMessage()
     {
-        $context = [];
-        foreach ($this->logVars as $name) {
-            if (!empty($GLOBALS[$name])) {
-                $context[] = "\${$name} = " . VarDumper::dumpAsString($GLOBALS[$name]);
-            }
+        $context = ArrayHelper::filter($GLOBALS, $this->logVars);
+        $result = [];
+        foreach ($context as $key => $value) {
+            $result[] = "\${$key} = " . VarDumper::dumpAsString($value);
         }
-
-        return implode("\n\n", $context);
+        return implode("\n\n", $result);
     }
 
     /**
@@ -152,11 +161,11 @@ abstract class Target extends Component
      *
      * For example,
      *
-     * ~~~
+     * ```php
      * ['error', 'warning']
      * // which is equivalent to:
      * Logger::LEVEL_ERROR | Logger::LEVEL_WARNING
-     * ~~~
+     * ```
      *
      * @param array|integer $levels message levels that this target is interested in.
      * @throws InvalidConfigException if an unknown level name is given
@@ -239,7 +248,7 @@ abstract class Target extends Component
         $level = Logger::getLevelName($level);
         if (!is_string($text)) {
             // exceptions may not be serializable if in the call stack somewhere is a Closure
-            if ($text instanceof \Exception) {
+            if ($text instanceof \Throwable || $text instanceof \Exception) {
                 $text = (string) $text;
             } else {
                 $text = VarDumper::export($text);

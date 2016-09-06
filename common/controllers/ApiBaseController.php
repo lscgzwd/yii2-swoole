@@ -1,34 +1,28 @@
 <?php
 namespace common\controllers;
 
+use common\constants\ModelConst;
 use Yii;
 
 /**
- * Api基类，实现统一的验签
+ * Api base controller, implement common sign check
  * Class ApiBaseController
  * @package common\controllers
  */
 class ApiBaseController extends BaseController
 {
-    protected $needCheckSign     = true; // 是否需要验签
-    protected $signExcludeFields = ['sign']; // 验签需要过滤的字段
-    protected $safeDateDiff      = 30; // 接口请求时间误差30秒
+    protected $needCheckSign     = true; // mark for need check sign
+    protected $signExcludeFields = ['sign']; // fields in request must been filter when check sign
+    protected $safeDateDiff      = 30; // security time to api request limit between client and server, unit seconds
 
     /**
-     * 控制器初使化方法
+     * execute before the action method
      */
     public function beforeAction($action)
     {
         if ($this->needCheckSign == true && $this->checkSign() === false) {
-            $response = Yii::$app->getResponse();
-            $result   = [
-                'error' => [
-                    'returnCode'        => 401,
-                    'returnMessage'     => '签名错误',
-                    'returnUserMessage' => '签名错误',
-                ],
-                'data'  => null,
-            ];
+            $response       = Yii::$app->getResponse();
+            $result         = ModelConst::getResult(ModelConst::SIGN_ERROR);
             $response->data = $result;
             $this->logResponse($result);
             \Yii::$app->getResponse()->format = $this->outContentType;

@@ -1,6 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
+ * Chinese ID card number valid
  * User: lusc
  * Date: 2016/5/7
  * Time: 2:30
@@ -10,7 +10,12 @@ namespace common\helpers;
 
 class IDCardCheckHelper
 {
-    // $num为身份证号码，$checkSex：1为男，2为女，不输入为不验证
+    /**
+     * valid id card
+     * @param string       $num id card number
+     * @param string $checkSex 1 boy 2 girl , default not check sex
+     * @return bool
+     */
     public function checkIdentity($num, $checkSex = '')
     {
         // 不是15位或不是18位都是无效身份证号

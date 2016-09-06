@@ -1,31 +1,28 @@
 <?php
 
-// 环境变量 控制是加载哪个环境的配置文件runtime.php已经加入.gitignore文件
+// variable to control load what environment config. runtime.php has been added to .gitignore , please add it by yourself
 $env    = require __DIR__ . '/runtime.php';
 $config = [];
 switch ($env) {
     case 'beta': // beta
-        define('YII_DEBUG', false); // 关闭debug模式
+        define('YII_DEBUG', false); // disable debug
         define('YII_ENV', 'beta');
         define('TRACE_LEVEL', 0);
         break;
-    case 'prod': // 生产
-    case 'stress': // 压测
-    case 'docker':
-    case 'yz':
-        define('YII_DEBUG', false); // 关闭debug模式
+    case 'prod': // product environment
+        define('YII_DEBUG', false); // disable debug
         define('YII_ENV', 'prod');
         define('TRACE_LEVEL', 0);
         break;
     case 'dev':
-        // 开发环境
+        // development environment
         $env = 'dev';
         define('YII_DEBUG', true);
         define('YII_ENV', 'dev');
         define('TRACE_LEVEL', 3);
         break;
     default:
-        // 默认本地环境
+        // default local
         $env = 'local';
         define('YII_DEBUG', true);
         define('YII_ENV', 'dev');
@@ -35,24 +32,24 @@ switch ($env) {
 define('IN_SWOOLE', true);
 define('WEB_PATH', __DIR__);
 
-// swoole中不支持set_exception_handler所以禁用
+// set_exception_handler not allowed on swoole, so disable it
 define('YII_ENABLE_ERROR_HANDLER', false);
 
-require __DIR__ . '/../../vendor/autoload.php'; // PSR自动加载
-require __DIR__ . '/../../vendor/yiisoft/yii2/Yii.php'; // Yii核心类
-require __DIR__ . '/../../common/config/bootstrap.php'; // 命名空间注册
+require __DIR__ . '/../../vendor/autoload.php'; // autoload by PSR
+require __DIR__ . '/../../vendor/yiisoft/yii2/Yii.php'; // Yii Core
+require __DIR__ . '/../../common/config/bootstrap.php'; // register namespaces
 
-// 加载公共配置
+// load configuration
 $config = yii\helpers\ArrayHelper::merge(
     $config,
-    require __DIR__ . '/../../common/config/main.php', // 公共配置
-    require __DIR__ . '/../../common/config/main-' . $env . '.php', // 公共配置
-    require __DIR__ . '/../config/main.php', // 项目配置
-    require __DIR__ . '/../config/main-' . $env . '.php', // 项目配置
-    require __DIR__ . '/../../swoole/config/main.php'
+    require __DIR__ . '/../../common/config/main.php', // common config for all app
+    require __DIR__ . '/../../common/config/main-' . $env . '.php', // common config for all app with current environment
+    require __DIR__ . '/../config/main.php', // app config
+    require __DIR__ . '/../config/main-' . $env . '.php', // app environment config
+    require __DIR__ . '/../../swoole/config/main.php' // swoole config
 );
 
-// 加载全局配置 Yii::$app->params[$key]
+// load params Yii::$app->params[$key]
 $config['params'] = yii\helpers\ArrayHelper::merge(
     require __DIR__ . '/../../common/config/params.php',
     require __DIR__ . '/../../common/config/params-' . $env . '.php',

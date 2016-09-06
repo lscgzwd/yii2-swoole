@@ -21,7 +21,7 @@ class Request extends \yii\web\Request
 {
     /**
      * @var \swoole_http_request swoole
-     * swoole 请求
+     * swoole request
      *
      */
     public $swoole;
@@ -59,7 +59,7 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * 设置swoole输出类
+     * set the swoole request
      * @param \Swoole\Http\Request $response
      */
     public function setSwooleRequest(\Swoole\Http\Request $response)
@@ -68,7 +68,7 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * 获取swoole输出类
+     * get the current swoole request
      * @return \Swoole\Http\Request
      */
     public function getSwooleRequest()
@@ -451,22 +451,22 @@ class Request extends \yii\web\Request
         }
         return $this->_scriptUrl;
     }
-/**
- * Sets the relative URL for the application entry script.
- * This setter is provided in case the entry script URL cannot be determined
- * on certain Web servers.
- * @param string $value the relative URL for the application entry script.
- */
+    /**
+     * Sets the relative URL for the application entry script.
+     * This setter is provided in case the entry script URL cannot be determined
+     * on certain Web servers.
+     * @param string $value the relative URL for the application entry script.
+     */
     public function setScriptUrl($value)
     {
         $this->_scriptUrl = '/' . trim($value, '/');
     }
     private $_scriptFile;
-/**
- * Returns the entry script file path.
- * The default implementation will simply return `$_SERVER['SCRIPT_FILENAME']`.
- * @return string the entry script file path
- */
+    /**
+     * Returns the entry script file path.
+     * The default implementation will simply return `$_SERVER['SCRIPT_FILENAME']`.
+     * @return string the entry script file path
+     */
     public function getScriptFile()
     {
         return isset($this->_scriptFile) ? $this->_scriptFile : $_SERVER['SCRIPT_FILENAME'];
@@ -483,14 +483,14 @@ class Request extends \yii\web\Request
         $this->_scriptFile = $value;
     }
     private $_pathInfo;
-/**
- * Returns the path info of the currently requested URL.
- * A path info refers to the part that is after the entry script and before the question mark (query string).
- * The starting and ending slashes are both removed.
- * @return string part of the request URL that is after the entry script and before the question mark.
- * Note, the returned path info is already URL-decoded.
- * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
- */
+    /**
+     * Returns the path info of the currently requested URL.
+     * A path info refers to the part that is after the entry script and before the question mark (query string).
+     * The starting and ending slashes are both removed.
+     * @return string part of the request URL that is after the entry script and before the question mark.
+     * Note, the returned path info is already URL-decoded.
+     * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
+     */
     public function getPathInfo()
     {
         if ($this->_pathInfo === null) {
@@ -498,23 +498,23 @@ class Request extends \yii\web\Request
         }
         return $this->_pathInfo;
     }
-/**
- * Sets the path info of the current request.
- * This method is mainly provided for testing purpose.
- * @param string $value the path info of the current request
- */
+    /**
+     * Sets the path info of the current request.
+     * This method is mainly provided for testing purpose.
+     * @param string $value the path info of the current request
+     */
     public function setPathInfo($value)
     {
         $this->_pathInfo = ltrim($value, '/');
     }
-/**
- * Resolves the path info part of the currently requested URL.
- * A path info refers to the part that is after the entry script and before the question mark (query string).
- * The starting slashes are both removed (ending slashes will be kept).
- * @return string part of the request URL that is after the entry script and before the question mark.
- * Note, the returned path info is decoded.
- * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
- */
+    /**
+     * Resolves the path info part of the currently requested URL.
+     * A path info refers to the part that is after the entry script and before the question mark (query string).
+     * The starting slashes are both removed (ending slashes will be kept).
+     * @return string part of the request URL that is after the entry script and before the question mark.
+     * Note, the returned path info is decoded.
+     * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
+     */
     public function resolvePathInfo()
     {
         $pathInfo = $this->getUrl();
@@ -553,23 +553,23 @@ class Request extends \yii\web\Request
         }
         return (string) $pathInfo;
     }
-/**
- * Returns the currently requested absolute URL.
- * This is a shortcut to the concatenation of [[hostInfo]] and [[url]].
- * @return string the currently requested absolute URL.
- */
+    /**
+     * Returns the currently requested absolute URL.
+     * This is a shortcut to the concatenation of [[hostInfo]] and [[url]].
+     * @return string the currently requested absolute URL.
+     */
     public function getAbsoluteUrl()
     {
         return $this->getHostInfo() . $this->getUrl();
     }
     private $_url;
-/**
- * Returns the currently requested relative URL.
- * This refers to the portion of the URL that is after the [[hostInfo]] part.
- * It includes the [[queryString]] part if any.
- * @return string the currently requested relative URL. Note that the URI returned is URL-encoded.
- * @throws InvalidConfigException if the URL cannot be determined due to unusual server configuration
- */
+    /**
+     * Returns the currently requested relative URL.
+     * This refers to the portion of the URL that is after the [[hostInfo]] part.
+     * It includes the [[queryString]] part if any.
+     * @return string the currently requested relative URL. Note that the URI returned is URL-encoded.
+     * @throws InvalidConfigException if the URL cannot be determined due to unusual server configuration
+     */
     public function getUrl()
     {
         if ($this->_url === null) {
@@ -577,24 +577,24 @@ class Request extends \yii\web\Request
         }
         return $this->_url;
     }
-/**
- * Sets the currently requested relative URL.
- * The URI must refer to the portion that is after [[hostInfo]].
- * Note that the URI should be URL-encoded.
- * @param string $value the request URI to be set
- */
+    /**
+     * Sets the currently requested relative URL.
+     * The URI must refer to the portion that is after [[hostInfo]].
+     * Note that the URI should be URL-encoded.
+     * @param string $value the request URI to be set
+     */
     public function setUrl($value)
     {
         $this->_url = $value;
     }
-/**
- * Resolves the request URI portion for the currently requested URL.
- * This refers to the portion that is after the [[hostInfo]] part. It includes the [[queryString]] part if any.
- * The implementation of this method referenced Zend_Controller_Request_Http in Zend Framework.
- * @return string|boolean the request URI portion for the currently requested URL.
- * Note that the URI returned is URL-encoded.
- * @throws InvalidConfigException if the request URI cannot be determined due to unusual server configuration
- */
+    /**
+     * Resolves the request URI portion for the currently requested URL.
+     * This refers to the portion that is after the [[hostInfo]] part. It includes the [[queryString]] part if any.
+     * The implementation of this method referenced Zend_Controller_Request_Http in Zend Framework.
+     * @return string|boolean the request URI portion for the currently requested URL.
+     * Note that the URI returned is URL-encoded.
+     * @throws InvalidConfigException if the request URI cannot be determined due to unusual server configuration
+     */
     public function resolveRequestUri()
     {
         if (isset($_SERVER['HTTP_X_REWRITE_URL'])) { // IIS
@@ -614,93 +614,93 @@ class Request extends \yii\web\Request
         }
         return $requestUri;
     }
-/**
- * Returns part of the request URL that is after the question mark.
- * @return string part of the request URL that is after the question mark
- */
+    /**
+     * Returns part of the request URL that is after the question mark.
+     * @return string part of the request URL that is after the question mark
+     */
     public function getQueryString()
     {
         return isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
     }
-/**
- * Return if the request is sent via secure channel (https).
- * @return boolean if the request is sent via secure channel (https)
- */
+    /**
+     * Return if the request is sent via secure channel (https).
+     * @return boolean if the request is sent via secure channel (https)
+     */
     public function getIsSecureConnection()
     {
         return isset($_SERVER['HTTPS']) && (strcasecmp($_SERVER['HTTPS'], 'on') === 0 || $_SERVER['HTTPS'] == 1)
         || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strcasecmp($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') === 0;
     }
-/**
- * Returns the server name.
- * @return string server name
- */
+    /**
+     * Returns the server name.
+     * @return string server name
+     */
     public function getServerName()
     {
         return $_SERVER['SERVER_NAME'];
     }
-/**
- * Returns the server port number.
- * @return integer server port number
- */
+    /**
+     * Returns the server port number.
+     * @return integer server port number
+     */
     public function getServerPort()
     {
         return (int) $_SERVER['SERVER_PORT'];
     }
-/**
- * Returns the URL referrer, null if not present
- * @return string URL referrer, null if not present
- */
+    /**
+     * Returns the URL referrer, null if not present
+     * @return string URL referrer, null if not present
+     */
     public function getReferrer()
     {
         return isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
     }
-/**
- * Returns the user agent, null if not present.
- * @return string user agent, null if not present
- */
+    /**
+     * Returns the user agent, null if not present.
+     * @return string user agent, null if not present
+     */
     public function getUserAgent()
     {
         return isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null;
     }
-/**
- * Returns the user IP address.
- * @return string user IP address. Null is returned if the user IP address cannot be detected.
- */
+    /**
+     * Returns the user IP address.
+     * @return string user IP address. Null is returned if the user IP address cannot be detected.
+     */
     public function getUserIP()
     {
         return isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null;
     }
-/**
- * Returns the user host name, null if it cannot be determined.
- * @return string user host name, null if cannot be determined
- */
+    /**
+     * Returns the user host name, null if it cannot be determined.
+     * @return string user host name, null if cannot be determined
+     */
     public function getUserHost()
     {
         return isset($_SERVER['REMOTE_HOST']) ? $_SERVER['REMOTE_HOST'] : null;
     }
-/**
- * @return string the username sent via HTTP authentication, null if the username is not given
- */
+    /**
+     * @return string the username sent via HTTP authentication, null if the username is not given
+     */
     public function getAuthUser()
     {
         return isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : null;
     }
-/**
- * @return string the password sent via HTTP authentication, null if the password is not given
- */
+    /**
+     * @return string the password sent via HTTP authentication, null if the password is not given
+     */
     public function getAuthPassword()
     {
         return isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : null;
     }
     private $_port;
-/**
- * Returns the port to use for insecure requests.
- * Defaults to 80, or the port specified by the server if the current
- * request is insecure.
- * @return integer port number for insecure requests.
- * @see setPort()
- */
+    /**
+     * Returns the port to use for insecure requests.
+     * Defaults to 80, or the port specified by the server if the current
+     * request is insecure.
+     * @return integer port number for insecure requests.
+     * @see setPort()
+     */
     public function getPort()
     {
         if ($this->_port === null) {
@@ -708,12 +708,12 @@ class Request extends \yii\web\Request
         }
         return $this->_port;
     }
-/**
- * Sets the port to use for insecure requests.
- * This setter is provided in case a custom port is necessary for certain
- * server configurations.
- * @param integer $value port number.
- */
+    /**
+     * Sets the port to use for insecure requests.
+     * This setter is provided in case a custom port is necessary for certain
+     * server configurations.
+     * @param integer $value port number.
+     */
     public function setPort($value)
     {
         if ($value != $this->_port) {
@@ -722,13 +722,13 @@ class Request extends \yii\web\Request
         }
     }
     private $_securePort;
-/**
- * Returns the port to use for secure requests.
- * Defaults to 443, or the port specified by the server if the current
- * request is secure.
- * @return integer port number for secure requests.
- * @see setSecurePort()
- */
+    /**
+     * Returns the port to use for secure requests.
+     * Defaults to 443, or the port specified by the server if the current
+     * request is secure.
+     * @return integer port number for secure requests.
+     * @see setSecurePort()
+     */
     public function getSecurePort()
     {
         if ($this->_securePort === null) {
@@ -736,12 +736,12 @@ class Request extends \yii\web\Request
         }
         return $this->_securePort;
     }
-/**
- * Sets the port to use for secure requests.
- * This setter is provided in case a custom port is necessary for certain
- * server configurations.
- * @param integer $value port number.
- */
+    /**
+     * Sets the port to use for secure requests.
+     * This setter is provided in case a custom port is necessary for certain
+     * server configurations.
+     * @param integer $value port number.
+     */
     public function setSecurePort($value)
     {
         if ($value != $this->_securePort) {
@@ -750,26 +750,26 @@ class Request extends \yii\web\Request
         }
     }
     private $_contentTypes;
-/**
- * Returns the content types acceptable by the end user.
- * This is determined by the `Accept` HTTP header. For example,
- *
- * ```php
- * $_SERVER['HTTP_ACCEPT'] = 'text/plain; q=0.5, application/json; version=1.0, application/xml; version=2.0;';
- * $types = $request->getAcceptableContentTypes();
- * print_r($types);
- * // displays:
- * // [
- * //     'application/json' => ['q' => 1, 'version' => '1.0'],
- * //      'application/xml' => ['q' => 1, 'version' => '2.0'],
- * //           'text/plain' => ['q' => 0.5],
- * // ]
- * ```
- *
- * @return array the content types ordered by the quality score. Types with the highest scores
- * will be returned first. The array keys are the content types, while the array values
- * are the corresponding quality score and other parameters as given in the header.
- */
+    /**
+     * Returns the content types acceptable by the end user.
+     * This is determined by the `Accept` HTTP header. For example,
+     *
+     * ```php
+     * $_SERVER['HTTP_ACCEPT'] = 'text/plain; q=0.5, application/json; version=1.0, application/xml; version=2.0;';
+     * $types = $request->getAcceptableContentTypes();
+     * print_r($types);
+     * // displays:
+     * // [
+     * //     'application/json' => ['q' => 1, 'version' => '1.0'],
+     * //      'application/xml' => ['q' => 1, 'version' => '2.0'],
+     * //           'text/plain' => ['q' => 0.5],
+     * // ]
+     * ```
+     *
+     * @return array the content types ordered by the quality score. Types with the highest scores
+     * will be returned first. The array keys are the content types, while the array values
+     * are the corresponding quality score and other parameters as given in the header.
+     */
     public function getAcceptableContentTypes()
     {
         if ($this->_contentTypes === null) {
@@ -781,28 +781,28 @@ class Request extends \yii\web\Request
         }
         return $this->_contentTypes;
     }
-/**
- * Sets the acceptable content types.
- * Please refer to [[getAcceptableContentTypes()]] on the format of the parameter.
- * @param array $value the content types that are acceptable by the end user. They should
- * be ordered by the preference level.
- * @see getAcceptableContentTypes()
- * @see parseAcceptHeader()
- */
+    /**
+     * Sets the acceptable content types.
+     * Please refer to [[getAcceptableContentTypes()]] on the format of the parameter.
+     * @param array $value the content types that are acceptable by the end user. They should
+     * be ordered by the preference level.
+     * @see getAcceptableContentTypes()
+     * @see parseAcceptHeader()
+     */
     public function setAcceptableContentTypes($value)
     {
         $this->_contentTypes = $value;
     }
-/**
- * Returns request content-type
- * The Content-Type header field indicates the MIME type of the data
- * contained in [[getRawBody()]] or, in the case of the HEAD method, the
- * media type that would have been sent had the request been a GET.
- * For the MIME-types the user expects in response, see [[acceptableContentTypes]].
- * @return string request content-type. Null is returned if this information is not available.
- * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.17
- * HTTP 1.1 header field definitions
- */
+    /**
+     * Returns request content-type
+     * The Content-Type header field indicates the MIME type of the data
+     * contained in [[getRawBody()]] or, in the case of the HEAD method, the
+     * media type that would have been sent had the request been a GET.
+     * For the MIME-types the user expects in response, see [[acceptableContentTypes]].
+     * @return string request content-type. Null is returned if this information is not available.
+     * @link http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.17
+     * HTTP 1.1 header field definitions
+     */
     public function getContentType()
     {
         if (isset($_SERVER["CONTENT_TYPE"])) {
@@ -814,12 +814,12 @@ class Request extends \yii\web\Request
         return null;
     }
     private $_languages;
-/**
- * Returns the languages acceptable by the end user.
- * This is determined by the `Accept-Language` HTTP header.
- * @return array the languages ordered by the preference level. The first element
- * represents the most preferred language.
- */
+    /**
+     * Returns the languages acceptable by the end user.
+     * This is determined by the `Accept-Language` HTTP header.
+     * @return array the languages ordered by the preference level. The first element
+     * represents the most preferred language.
+     */
     public function getAcceptableLanguages()
     {
         if ($this->_languages === null) {
@@ -831,38 +831,38 @@ class Request extends \yii\web\Request
         }
         return $this->_languages;
     }
-/**
- * @param array $value the languages that are acceptable by the end user. They should
- * be ordered by the preference level.
- */
+    /**
+     * @param array $value the languages that are acceptable by the end user. They should
+     * be ordered by the preference level.
+     */
     public function setAcceptableLanguages($value)
     {
         $this->_languages = $value;
     }
-/**
- * Parses the given `Accept` (or `Accept-Language`) header.
- *
- * This method will return the acceptable values with their quality scores and the corresponding parameters
- * as specified in the given `Accept` header. The array keys of the return value are the acceptable values,
- * while the array values consisting of the corresponding quality scores and parameters. The acceptable
- * values with the highest quality scores will be returned first. For example,
- *
- * ```php
- * $header = 'text/plain; q=0.5, application/json; version=1.0, application/xml; version=2.0;';
- * $accepts = $request->parseAcceptHeader($header);
- * print_r($accepts);
- * // displays:
- * // [
- * //     'application/json' => ['q' => 1, 'version' => '1.0'],
- * //      'application/xml' => ['q' => 1, 'version' => '2.0'],
- * //           'text/plain' => ['q' => 0.5],
- * // ]
- * ```
- *
- * @param string $header the header to be parsed
- * @return array the acceptable values ordered by their quality score. The values with the highest scores
- * will be returned first.
- */
+    /**
+     * Parses the given `Accept` (or `Accept-Language`) header.
+     *
+     * This method will return the acceptable values with their quality scores and the corresponding parameters
+     * as specified in the given `Accept` header. The array keys of the return value are the acceptable values,
+     * while the array values consisting of the corresponding quality scores and parameters. The acceptable
+     * values with the highest quality scores will be returned first. For example,
+     *
+     * ```php
+     * $header = 'text/plain; q=0.5, application/json; version=1.0, application/xml; version=2.0;';
+     * $accepts = $request->parseAcceptHeader($header);
+     * print_r($accepts);
+     * // displays:
+     * // [
+     * //     'application/json' => ['q' => 1, 'version' => '1.0'],
+     * //      'application/xml' => ['q' => 1, 'version' => '2.0'],
+     * //           'text/plain' => ['q' => 0.5],
+     * // ]
+     * ```
+     *
+     * @param string $header the header to be parsed
+     * @return array the acceptable values ordered by their quality score. The values with the highest scores
+     * will be returned first.
+     */
     public function parseAcceptHeader($header)
     {
         $accepts = [];
@@ -919,14 +919,14 @@ class Request extends \yii\web\Request
         }
         return $result;
     }
-/**
- * Returns the user-preferred language that should be used by this application.
- * The language resolution is based on the user preferred languages and the languages
- * supported by the application. The method will try to find the best match.
- * @param array $languages a list of the languages supported by the application. If this is empty, the current
- * application language will be returned without further processing.
- * @return string the language that the application should use.
- */
+    /**
+     * Returns the user-preferred language that should be used by this application.
+     * The language resolution is based on the user preferred languages and the languages
+     * supported by the application. The method will try to find the best match.
+     * @param array $languages a list of the languages supported by the application. If this is empty, the current
+     * application language will be returned without further processing.
+     * @return string the language that the application should use.
+     */
     public function getPreferredLanguage(array $languages = [])
     {
         if (empty($languages)) {
@@ -946,11 +946,11 @@ class Request extends \yii\web\Request
         }
         return reset($languages);
     }
-/**
- * Gets the Etags.
- *
- * @return array The entity tags
- */
+    /**
+     * Gets the Etags.
+     *
+     * @return array The entity tags
+     */
     public function getETags()
     {
         if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
@@ -959,22 +959,22 @@ class Request extends \yii\web\Request
             return [];
         }
     }
-/**
- * Returns the cookie collection.
- * Through the returned cookie collection, you may access a cookie using the following syntax:
- *
- * ~~~
- * $cookie = $request->cookies['name']
- * if ($cookie !== null) {
- *     $value = $cookie->value;
- * }
- *
- * // alternatively
- * $value = $request->cookies->getValue('name');
- * ~~~
- *
- * @return CookieCollection the cookie collection.
- */
+    /**
+     * Returns the cookie collection.
+     * Through the returned cookie collection, you may access a cookie using the following syntax:
+     *
+     * ~~~
+     * $cookie = $request->cookies['name']
+     * if ($cookie !== null) {
+     *     $value = $cookie->value;
+     * }
+     *
+     * // alternatively
+     * $value = $request->cookies->getValue('name');
+     * ~~~
+     *
+     * @return CookieCollection the cookie collection.
+     */
     public function getCookies()
     {
         if ($this->_cookies === null) {
@@ -984,11 +984,11 @@ class Request extends \yii\web\Request
         }
         return $this->_cookies;
     }
-/**
- * Converts `$_COOKIE` into an array of [[Cookie]].
- * @return array the cookies obtained from request
- * @throws InvalidConfigException if [[cookieValidationKey]] is not set when [[enableCookieValidation]] is true
- */
+    /**
+     * Converts `$_COOKIE` into an array of [[Cookie]].
+     * @return array the cookies obtained from request
+     * @throws InvalidConfigException if [[cookieValidationKey]] is not set when [[enableCookieValidation]] is true
+     */
     public function loadCookies()
     {
         $cookies = [];
@@ -1049,11 +1049,11 @@ class Request extends \yii\web\Request
         }
         return $this->_csrfToken;
     }
-/**
- * Loads the CSRF token from cookie or session.
- * @return string the CSRF token loaded from cookie or session. Null is returned if the cookie or session
- * does not have CSRF token.
- */
+    /**
+     * Loads the CSRF token from cookie or session.
+     * @return string the CSRF token loaded from cookie or session. Null is returned if the cookie or session
+     * does not have CSRF token.
+     */
     public function loadCsrfToken()
     {
         if ($this->enableCsrfCookie) {

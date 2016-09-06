@@ -10,6 +10,7 @@ namespace yii\web;
 use Yii;
 use yii\base\Action;
 use yii\base\InvalidParamException;
+use yii\base\ViewNotFoundException;
 
 /**
  * ViewAction represents an action that displays a view according to a user-specified parameter.
@@ -66,6 +67,7 @@ class ViewAction extends Action
     public function run()
     {
         $viewName = $this->resolveViewName();
+        $this->controller->actionParams[$this->viewParam] = Yii::$app->request->get($this->viewParam);
 
         $controllerLayout = null;
         if ($this->layout !== null) {
@@ -80,7 +82,7 @@ class ViewAction extends Action
                 $this->controller->layout = $controllerLayout;
             }
 
-        } catch (InvalidParamException $e) {
+        } catch (ViewNotFoundException $e) {
 
             if ($controllerLayout) {
                 $this->controller->layout = $controllerLayout;

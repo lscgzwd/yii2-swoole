@@ -82,7 +82,7 @@ class Connection extends \yii\redis\Connection
     public function executeCommand($name, $params = [], $reconnect = 0)
     {
         $this->open();
-        // 默认重试一次逻辑，需要备份原始命令和参数
+        // backup the params for try again when execute fail
         $oldName   = $name;
         $oldParams = $params;
         array_unshift($params, $name);

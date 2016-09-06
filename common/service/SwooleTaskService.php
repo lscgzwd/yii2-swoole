@@ -8,7 +8,7 @@
 
 namespace common\service;
 
-use apps\lib\Trace;
+use common\helpers\Trace;
 
 class SwooleTaskService
 {
@@ -19,7 +19,7 @@ class SwooleTaskService
         try {
             new $class($taskData['data']);
         } catch (\Exception $e) {
-            Trace::addLog('execute_task_exception', 'error', ['data' => $taskData, 'exception' => $e->__toString(), 'msg' => '执行task任务发生异常'], 'swooletask');
+            Trace::addLog('execute_task_exception', 'error', ['data' => $taskData, 'exception' => $e->__toString(), 'msg' => 'task execute fail.'], 'swooletask');
         }
     }
 }

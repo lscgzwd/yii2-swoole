@@ -85,7 +85,7 @@ abstract class Application extends Module
     /**
      * @var string the namespace that controller classes are located in.
      * This namespace will be used to load controller classes by prepending it to the controller class name.
-     * The default namespace is `apps\controllers`.
+     * The default namespace is `app\controllers`.
      *
      * Please refer to the [guide about class autoloading](guide:concept-autoloading.md) for more details.
      */
@@ -140,7 +140,7 @@ abstract class Application extends Module
      * @var array list of installed Yii extensions. Each array element represents a single extension
      * with the following structure:
      *
-     * ~~~
+     * ```php
      * [
      *     'name' => 'extension name',
      *     'version' => 'version number',
@@ -150,7 +150,7 @@ abstract class Application extends Module
      *         '@alias2' => 'to/path2',
      *     ],
      * ]
-     * ~~~
+     * ```
      *
      * The "bootstrap" class listed above will be instantiated during the application
      * [[bootstrap()|bootstrapping process]]. If the class implements [[BootstrapInterface]],
@@ -185,6 +185,7 @@ abstract class Application extends Module
      */
     public $loadedModules = [];
 
+
     /**
      * Constructor.
      * @param array $config name-value pairs that will be used to initialize the object properties.
@@ -194,7 +195,7 @@ abstract class Application extends Module
     public function __construct($config = [])
     {
         Yii::$app = $this;
-        $this->setInstance($this);
+        static::setInstance($this);
 
         $this->state = self::STATE_BEGIN;
 
@@ -274,8 +275,8 @@ abstract class Application extends Module
     protected function bootstrap()
     {
         if ($this->extensions === null) {
-            $file             = Yii::getAlias('@vendor/yiisoft/extensions.php');
-            $this->extensions = is_file($file) ? include $file : [];
+            $file = Yii::getAlias('@vendor/yiisoft/extensions.php');
+            $this->extensions = is_file($file) ? include($file) : [];
         }
         foreach ($this->extensions as $extension) {
             if (!empty($extension['alias'])) {
@@ -286,10 +287,10 @@ abstract class Application extends Module
             if (isset($extension['bootstrap'])) {
                 $component = Yii::createObject($extension['bootstrap']);
                 if ($component instanceof BootstrapInterface) {
-                    Yii::trace("Bootstrap with " . get_class($component) . '::bootstrap()', __METHOD__);
+                    Yii::trace('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
                     $component->bootstrap($this);
                 } else {
-                    Yii::trace("Bootstrap with " . get_class($component), __METHOD__);
+                    Yii::trace('Bootstrap with ' . get_class($component), __METHOD__);
                 }
             }
         }
@@ -310,10 +311,10 @@ abstract class Application extends Module
             }
 
             if ($component instanceof BootstrapInterface) {
-                Yii::trace("Bootstrap with " . get_class($component) . '::bootstrap()', __METHOD__);
+                Yii::trace('Bootstrap with ' . get_class($component) . '::bootstrap()', __METHOD__);
                 $component->bootstrap($this);
             } else {
-                Yii::trace("Bootstrap with " . get_class($component), __METHOD__);
+                Yii::trace('Bootstrap with ' . get_class($component), __METHOD__);
             }
         }
     }
@@ -371,7 +372,7 @@ abstract class Application extends Module
             $this->trigger(self::EVENT_BEFORE_REQUEST);
 
             $this->state = self::STATE_HANDLING_REQUEST;
-            $response    = $this->handleRequest($this->getRequest());
+            $response = $this->handleRequest($this->getRequest());
 
             $this->state = self::STATE_AFTER_REQUEST;
             $this->trigger(self::EVENT_AFTER_REQUEST);
@@ -615,14 +616,14 @@ abstract class Application extends Module
     public function coreComponents()
     {
         return [
-            'log'          => ['class' => 'yii\log\Dispatcher'],
-            'view'         => ['class' => 'yii\web\View'],
-            'formatter'    => ['class' => 'yii\i18n\Formatter'],
-            'i18n'         => ['class' => 'yii\i18n\I18N'],
-            'mailer'       => ['class' => 'yii\swiftmailer\Mailer'],
-            'urlManager'   => ['class' => 'yii\web\UrlManager'],
+            'log' => ['class' => 'yii\log\Dispatcher'],
+            'view' => ['class' => 'yii\web\View'],
+            'formatter' => ['class' => 'yii\i18n\Formatter'],
+            'i18n' => ['class' => 'yii\i18n\I18N'],
+            'mailer' => ['class' => 'yii\swiftmailer\Mailer'],
+            'urlManager' => ['class' => 'yii\web\UrlManager'],
             'assetManager' => ['class' => 'yii\web\AssetManager'],
-            'security'     => ['class' => 'yii\base\Security'],
+            'security' => ['class' => 'yii\base\Security'],
         ];
     }
 
@@ -643,7 +644,7 @@ abstract class Application extends Module
 
         if ($this->state !== self::STATE_SENDING_RESPONSE && $this->state !== self::STATE_END) {
             $this->state = self::STATE_END;
-            $response    = $response ?: $this->getResponse();
+            $response = $response ? : $this->getResponse();
             $response->send();
         }
 

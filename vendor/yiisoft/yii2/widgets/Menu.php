@@ -27,7 +27,7 @@ use yii\helpers\Html;
  *
  * The following example shows how to use Menu:
  *
- * ~~~
+ * ```php
  * echo Menu::widget([
  *     'items' => [
  *         // Important: you need to specify url as 'controller/action',
@@ -41,7 +41,7 @@ use yii\helpers\Html;
  *         ['label' => 'Login', 'url' => ['site/login'], 'visible' => Yii::$app->user->isGuest],
  *     ],
  * ]);
- * ~~~
+ * ```
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
@@ -79,7 +79,9 @@ class Menu extends Widget
      * specifies its `options`, it will be merged with this property before being used to generate the HTML
      * attributes for the menu item tag. The following special options are recognized:
      *
-     * - tag: string, defaults to "li", the tag name of the item container tags. Set to false to disable container tag.
+     * - tag: string, defaults to "li", the tag name of the item container tags.
+     *   Set to false to disable container tag.
+     *   See also [[\yii\helpers\Html::tag()]].
      *
      * @see \yii\helpers\Html::renderTagAttributes() for details on how attributes are being rendered.
      */
@@ -130,6 +132,7 @@ class Menu extends Widget
      * @var array the HTML attributes for the menu's container tag. The following special options are recognized:
      *
      * - tag: string, defaults to "ul", the tag name of the item container tags. Set to false to disable container tag.
+     *   See also [[\yii\helpers\Html::tag()]].
      *
      * @see \yii\helpers\Html::renderTagAttributes() for details on how attributes are being rendered.
      */
@@ -176,11 +179,7 @@ class Menu extends Widget
             $options = $this->options;
             $tag = ArrayHelper::remove($options, 'tag', 'ul');
 
-            if ($tag !== false) {
-                echo Html::tag($tag, $this->renderItems($items), $options);
-            } else {
-                echo $this->renderItems($items);
-            }
+            echo Html::tag($tag, $this->renderItems($items), $options);
         }
     }
 
@@ -221,11 +220,7 @@ class Menu extends Widget
                     '{items}' => $this->renderItems($item['items']),
                 ]);
             }
-            if ($tag === false) {
-                $lines[] = $menu;
-            } else {
-                $lines[] = Html::tag($tag, $menu, $options);
-            }
+            $lines[] = Html::tag($tag, $menu, $options);
         }
 
         return implode("\n", $lines);

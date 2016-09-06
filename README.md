@@ -86,21 +86,23 @@ Usage
 ------------
 
 - clone and download the code
-- add runtime.php to api/web with content return 'local';// local is the enviroment keyword, maybe dev or prod, etc.
-- if you enviroment is local, you need and main-local.php and params-local.php to common/config and api/config
+- add runtime.php to api/web with content return 'local';// local is the environment keyword, maybe dev or prod, etc.
+- if you environment is local, you need and main-local.php and params-local.php to common/config and api/config
 - cd YOU_PATH/api/web , exec php swoole.php start
 - goto your web browser, visit http://127.0.0.1:9501/v01/demo/index
 - you can change the swoole config in params-*.php
+- if you manually end the Swoole\Http\Response, you should throw the EndException to make sure no more output
+- if you php7, you can and try catch for throwable in SwooleServer::onRequest and then remove the set_error_handler logic
 
 Contribution
 ------------
-Your contribution to Swoole development is very welcome!
+Your contribution to Yii2-swoole development is very welcome!
 
 You may contribute in the following ways:
 
--Repost issues and feedback
--Submit fixes, features via Pull Request
--Write/polish documentation
+- Repost issues and feedback
+- Submit fixes, features via Pull Request
+- Write/polish documentation
 
 License
 ------------

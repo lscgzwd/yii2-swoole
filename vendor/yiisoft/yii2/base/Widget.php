@@ -46,8 +46,11 @@ class Widget extends Component implements ViewContextInterface
      * Begins a widget.
      * This method creates an instance of the calling class. It will apply the configuration
      * to the created instance. A matching [[end()]] call should be called later.
+     * As some widgets may use output buffering, the [[end()]] call should be made in the same view
+     * to avoid breaking the nesting of output buffers.
      * @param array $config name-value pairs that will be used to initialize the object properties
      * @return static the newly created widget instance
+     * @see end()
      */
     public static function begin($config = [])
     {
@@ -64,6 +67,7 @@ class Widget extends Component implements ViewContextInterface
      * Note that the rendering result of the widget is directly echoed out.
      * @return static the widget instance that is ended.
      * @throws InvalidCallException if [[begin()]] and [[end()]] calls are not properly nested
+     * @see begin()
      */
     public static function end()
     {
@@ -73,10 +77,10 @@ class Widget extends Component implements ViewContextInterface
                 echo $widget->run();
                 return $widget;
             } else {
-                throw new InvalidCallException("Expecting end() of " . get_class($widget) . ", found " . get_called_class());
+                throw new InvalidCallException('Expecting end() of ' . get_class($widget) . ', found ' . get_called_class());
             }
         } else {
-            throw new InvalidCallException("Unexpected " . get_called_class() . '::end() call. A matching begin() is not found.');
+            throw new InvalidCallException('Unexpected ' . get_called_class() . '::end() call. A matching begin() is not found.');
         }
     }
 

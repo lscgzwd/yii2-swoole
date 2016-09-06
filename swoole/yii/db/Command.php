@@ -8,7 +8,7 @@
 
 namespace swoole\yii\db;
 
-use apps\lib\Trace;
+use common\helpers\Trace;
 use Yii;
 use yii\db\DataReader;
 use yii\db\Exception;
