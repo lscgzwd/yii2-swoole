@@ -8,9 +8,9 @@
 
 namespace api\modules\oss\controllers;
 
-use common\controllers\AppBaseController;
+use common\controllers\BaseController;
 
-class DemoController extends AppBaseController
+class DemoController extends BaseController
 {
     public function actionIndex()
     {

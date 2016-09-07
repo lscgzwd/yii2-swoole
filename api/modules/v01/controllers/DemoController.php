@@ -8,9 +8,9 @@
 
 namespace api\modules\v01\controllers;
 
-use common\controllers\ApiBaseController;
+use common\controllers\BaseController;
 
-class DemoController extends ApiBaseController
+class DemoController extends BaseController
 {
     public function actionIndex()
     {
