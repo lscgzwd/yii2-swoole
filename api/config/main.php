@@ -6,7 +6,7 @@ return [
     'controllerNamespace' => 'api\controllers',
     'modules'             => [
         'v01'   => [
-            'class' => 'api\modules\v0.1\Module',
+            'class' => 'api\modules\v01\Module',
         ],
         'inner' => [
             'class' => 'api\modules\inner\Module',
