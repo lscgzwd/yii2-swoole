@@ -14,9 +14,11 @@ class DemoController extends ApiBaseController
 {
     public function actionIndex()
     {
+        $_SESSION['time' . time()] = time();
         return [
-            'hello' => 'a',
-            'world' => 'b',
+            'hello'   => 'a',
+            'world'   => 'b',
+            'session' => $_SESSION,
         ];
     }
 }
