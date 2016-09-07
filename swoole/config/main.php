@@ -15,5 +15,8 @@ return [
         'redis'    => [
             'class' => 'swoole\yii\redis\Connection',
         ],
+        'session'  => [
+            'class' => 'swoole\yii\redis\Session',
+        ],
     ],
 ];

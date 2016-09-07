@@ -6,7 +6,7 @@ return [
     'sourceLanguage' => 'zh-CN',
     'runtimePath'    => '/data/logs',
     'components'     => [
-        'db'                 => [
+        'db'           => [
             'class'               => 'yii\db\Connection',
             'tablePrefix'         => 'jdb_',
             'charset'             => 'utf8',
@@ -16,7 +16,7 @@ return [
             // Name of the cache component used to store schema information
             'schemaCache'         => 'schemaCache',
         ],
-        'passport'           => [
+        'passport'     => [
             'class'               => 'yii\db\Connection',
             'tablePrefix'         => 'jdb_',
             'charset'             => 'utf8',
@@ -26,36 +26,36 @@ return [
             // Name of the cache component used to store schema information
             'schemaCache'         => 'schemaCache',
         ],
-        'cache'              => [
+        'cache'        => [
             'class' => 'yii\redis\Cache',
             'redis' => 'redis',
         ],
-        'schemaCache'        => [
+        'schemaCache'  => [
             'class' => 'yii\caching\FileCache',
         ],
-        'request'            => [
+        'request'      => [
             'enableCookieValidation' => false,
         ],
-        'errorHandler'       => [
+        'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-        'response'           => [
+        'response'     => [
             'charset' => 'UTF-8',
         ],
-        'session'            => [
+        'session'      => [
             'class' => 'yii\redis\Session',
         ],
-        'formatter'          => [
+        'formatter'    => [
             'class'           => 'yii\i18n\Formatter',
             'dateFormat'      => 'php:Y-m-d',
             'datetimeFormat'  => 'php:Y-m-d H:i:s',
             'timeFormat'      => 'php:H:i:s',
             'defaultTimeZone' => 'PRC',
         ],
-        'redis'              => [
+        'redis'        => [
             'class' => 'yii\redis\Connection',
         ],
-        'smtp'               => [
+        'smtp'         => [
             'class'     => 'yii\swiftmailer\Mailer',
             'transport' => [
                 'class'    => 'Swift_SmtpTransport',
@@ -66,7 +66,7 @@ return [
 //                'encryption' => 'tls',
             ],
         ],
-        'log'                => [
+        'log'          => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
             'targets'    => [
                 'logStash' => [
