@@ -121,7 +121,7 @@ class SwooleServer
     public function startSwooleServer($swooleConfig)
     {
         // start the http server
-        $swooleServer = new SwooleHttpServer($swooleConfig['host'], $swooleConfig['port']);
+        $swooleServer = new SwooleHttpServer($swooleConfig['host'], $swooleConfig['port'], SWOOLE_BASE);
         $swooleServer->set($swooleConfig['setting']);
         $swooleServer->on('Start', [$this, 'onStart']);
         $swooleServer->on('Shutdown', [$this, 'onShutdown']);
