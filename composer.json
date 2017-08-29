@@ -23,7 +23,7 @@
     },
     "require": {
         "php":">=7.0",
-        "briarbear": "~1.0.0",
+        "briarbear/briarbear": "~1.0.0",
         "yiisoft/yii2": "~2.0.0"
     }
 }

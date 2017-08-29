@@ -2,7 +2,7 @@
 An example for yii2 run with swoole
 # Requirements
 * swoole 1.9.18
-* briarbear 1.0.0
+* briarbear/briarbear 1.0.0
 * yiisoft/yii2 2.0.8
 * php 7.0
 
