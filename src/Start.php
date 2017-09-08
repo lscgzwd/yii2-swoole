@@ -474,7 +474,7 @@ class Start
                 (new $class)->$method($params);
             }
         } catch (\Throwable $exception) {
-            $this->addLog('exec_task_fail', 'error', $taskParams);
+            $this->addLog('exec_task_fail, exception:'.$exception->__toString(), 'error', $taskParams);
         }
         \Yii::getLogger()->flush();
         \Yii::getLogger()->flush(true);
