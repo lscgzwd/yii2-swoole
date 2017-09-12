@@ -27,7 +27,7 @@ class Controller extends \yii\web\Controller
         if ($id === '') {
             $id = $this->defaultAction;
         }
-        $key = $this->id . $id;
+        $key = md5(get_class($this)) . $id;
         if (isset(static::$actionInstances[$key])) {
             $action             = clone static::$actionInstances[$key];
             $action->controller = $this;
