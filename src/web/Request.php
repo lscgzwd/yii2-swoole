@@ -89,4 +89,20 @@ class Request extends \yii\web\Request
     {
         $this->_rawBody = $rawBody;
     }
+    /**
+     * Returns the user IP address.
+     * @return string|null user IP address, null if not available
+     */
+    public function getUserIP()
+    {
+        $ip=false;
+        if(!empty($_SERVER["HTTP_CLIENT_IP"])){
+            $ip = $_SERVER["HTTP_CLIENT_IP"];
+        }
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
+        }
+        return ($ip ? $ip : $_SERVER['REMOTE_ADDR']);
+    }
+
 }
