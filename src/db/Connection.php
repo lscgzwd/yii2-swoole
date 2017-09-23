@@ -61,8 +61,8 @@ class Connection extends \yii\db\Connection
     public function isConnectionError($exception)
     {
         if ($exception instanceof \PDOException) {
-            $errorInfo = $this->pdoStatement->errorInfo();
-            if ($errorInfo[1] == 70100 || $errorInfo[1] == 2006 || $errorInfo[1] == 2013) {
+            $errorCode = $exception->getCode();
+            if ($errorCode == 70100 || $errorCode == 2006 || $errorCode == 2013) {
                 return true;
             }
         }
