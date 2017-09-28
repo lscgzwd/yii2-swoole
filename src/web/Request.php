@@ -102,7 +102,7 @@ class Request extends \yii\web\Request
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
         }
-        return ($ip ? $ip : $_SERVER['REMOTE_ADDR']);
+        return ($ip ? $ip : ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
     }
 
 }
