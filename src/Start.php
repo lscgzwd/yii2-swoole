@@ -13,6 +13,10 @@ declare (strict_types = 1);
 
 namespace yiiswoole;
 
+use yii\base\ExitException;
+use yii\base\InvalidRouteException;
+use yii\web\NotFoundHttpException;
+
 defined('YII_ENABLE_ERROR_HANDLER') || define('YII_ENABLE_ERROR_HANDLER', false);
 defined('WEB_PATH') || define('WEB_PATH', __DIR__);
 defined('ROOT_PATH') || define('ROOT_PATH', realpath(__DIR__ . '/../../'));
@@ -257,6 +261,9 @@ class Start
 
             return $response;
         } catch (\Throwable $exception) {
+            if ($exception instanceof NotFoundHttpException || $exception instanceof InvalidRouteException || $exception instanceof ExitException) {
+                throw  $exception;
+            }
             return \Yii::$app->getErrorHandler()->handleException($exception);
         }
     }
@@ -324,6 +331,9 @@ class Start
 
             return $response;
         } catch (\Throwable $exception) {
+            if ($exception instanceof NotFoundHttpException || $exception instanceof InvalidRouteException || $exception instanceof ExitException) {
+                throw  $exception;
+            }
             return \Yii::$app->getErrorHandler()->handleException($exception);
         }
     }
