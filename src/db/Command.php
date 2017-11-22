@@ -64,6 +64,27 @@ class Command extends \yii\db\Command
 
         return $this;
     }
+    /**
+     * Specifies the SQL statement to be executed. The SQL statement will not be modified in any way.
+     * The previous SQL (if any) will be discarded, and [[params]] will be cleared as well. See [[reset()]]
+     * for details.
+     *
+     * @param string $sql the SQL statement to be set.
+     * @return $this this command instance
+     * @since 2.0.13
+     * @see reset()
+     * @see cancel()
+     */
+    public function setRawSql($sql)
+    {
+        if ($sql !== $this->_sql) {
+            $this->cancel();
+            $this->reset();
+            $this->_sql = $sql;
+        }
+
+        return $this;
+    }
 
     /**
      * Returns the raw SQL by inserting parameter values into the corresponding placeholders in [[sql]].
