@@ -122,7 +122,11 @@ class Start
         if (!empty($config['params'])) {
             foreach ($config['params'] as $key => $value) {
                 if (isset($arrServerConf[$key]) && !empty($arrServerConf[$key])) {
-                    $config['params'][$key] = \BriarBear\Helpers\ArrayHelper::merge($value, $arrServerConf[$key]);
+                    if (is_array($arrServerConf[$key])) {
+                        $config['params'][$key] = \BriarBear\Helpers\ArrayHelper::merge($value, $arrServerConf[$key]);
+                    } else {
+                        $config['params'][$key] = $arrServerConf[$key];
+                    }
                 }
             }
         }
