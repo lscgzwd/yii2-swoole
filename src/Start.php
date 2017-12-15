@@ -266,7 +266,11 @@ class Start
             return $response;
         } catch (\Throwable $exception) {
             if ($exception instanceof NotFoundHttpException || $exception instanceof InvalidRouteException || $exception instanceof ExitException) {
-                throw  $exception;
+                try {
+                    return \Yii::$app->getErrorHandler()->handleHttpException($exception);
+                } catch (\Throwable $ex) {
+                    return \Yii::$app->getErrorHandler()->handleException($ex);
+                }
             }
             return \Yii::$app->getErrorHandler()->handleException($exception);
         }

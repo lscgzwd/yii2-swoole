@@ -93,6 +93,41 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         $this->exception = null;
     }
+    /**
+     * Handles uncaught PHP exceptions.
+     *
+     * This method is implemented as a PHP exception handler.
+     *
+     * @param \Exception $exception the exception that is not caught
+     */
+    public function handleHttpException($exception)
+    {
+        $this->exception = $exception;
+
+        // disable error capturing to avoid recursive errors while handling exceptions
+        $this->unregister();
+
+        // set preventive HTTP status code to 500 in case error handling somehow fails and headers are sent
+        // HTTP exceptions will override this value in renderException()
+        Yii::$app->getResponse()->setStatusCode(500);
+
+        try {
+            if ($this->discardExistingOutput) {
+                $this->clearOutput();
+            }
+            $response = $this->renderException($exception);
+            \Yii::getLogger()->flush(true);
+            return $response;
+        } catch (\Exception $e) {
+            // an other exception could be thrown while displaying the exception
+            $this->handleFallbackExceptionMessage($e, $exception);
+        } catch (\Throwable $e) {
+            // additional check for \Throwable introduced in PHP 7
+            $this->handleFallbackExceptionMessage($e, $exception);
+        }
+
+        $this->exception = null;
+    }
 
     /**
      * Handles exception thrown during exception processing in [[handleException()]].
