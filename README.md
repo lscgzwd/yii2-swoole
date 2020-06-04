@@ -1,5 +1,5 @@
 # [yiiswoole](https://github.com/lsccgzwd/yii2-swoole)
-An example for yii2 run with swoole
+Yii2 run with swoole
 # Requirements
 * swoole 1.9.18
 * briarbear/briarbear 1.0.0
